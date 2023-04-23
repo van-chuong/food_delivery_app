@@ -8,4 +8,9 @@ class ImageHelper {
   static const String intro2 = '${imagePath}shipped.png';
   static const String intro3 = '${imagePath}medal.png';
   static const String intro4 = '${imagePath}credit_card.png';
+  static const String imgHamburger_1 = '${imagePath}hamburger_1.png';
+  static const String imgHamburger_2 = '${imagePath}hamburger_2.png';
+  static const String facebook_1 = '${imagePath}facebook_1.png';
+  static const String google_plus_1 = '${imagePath}google_plus_1.png';
+  static const String icMail = '${imagePath}mail_icon.png';
 }
