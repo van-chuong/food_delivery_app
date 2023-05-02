@@ -1,51 +1,49 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:food_delivery_app/config/helper/image_helper.dart';
+import 'package:food_delivery_app/config/helper/local_storage_helper.dart';
 import 'package:food_delivery_app/config/themes/app_colors.dart';
 import 'package:food_delivery_app/config/themes/app_text_styles.dart';
+import 'package:food_delivery_app/controllers/sign_up_controller.dart';
 import 'package:food_delivery_app/screens/main_screen.dart';
 import 'package:food_delivery_app/services/firebase_service.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:responsive_sizer/responsive_sizer.dart';
-import '../config/themes/app_button_style.dart';
-import '../widgets/responsive_widget.dart';
-
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({Key? key}) : super(key: key);
-  static String routerName = '/sign_in';
+import '../../config/helper/dialog_helper.dart';
+import '../../config/themes/app_button_style.dart';
+import '../../widgets/app_bar_widget.dart';
+import '../../widgets/responsive_widget.dart';
+import 'package:get/get.dart';
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({Key? key}) : super(key: key);
+  static String routerName = '/sign_up';
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
-    if(FirebaseService().checkUserIsLogged() ==true){
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=> MainScreen()) , (Route<dynamic> route) => false);
-    }
     // TODO: implement initState
     super.initState();
   }
-  TextEditingController _mailController = new TextEditingController();
-  TextEditingController _passController = new TextEditingController();
-  var _emailError;
-  bool show = true;
+
   final _formKey = GlobalKey<FormBuilderState>();
 
   @override
   Widget build(BuildContext context) {
-    var condition = Device.orientation == Orientation.landscape ||
-        Device.screenType == ScreenType.desktop;
-    var conditionMobile = Device.screenType == ScreenType.mobile;
-    var conditionTablet = Device.screenType == ScreenType.tablet;
+    var condition = context.width >= 1000 ;
+    var conditionMobile = context.isPhone;
+    var conditionTablet = context.isTablet;
     double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
     var email;
     var password;
+    var conFirmPassword;
+    var fullName;
+    final signUpController = Get.put(SignUpController());
     return Scaffold(
+      appBar: AppBarWidget().appBarMobile("", context),
       body: SafeArea(
         child: SizedBox.expand(
             child: condition == true
@@ -121,50 +119,32 @@ class _SignInScreenState extends State<SignInScreen> {
                                                                         : 26)),
                                                   ])),
                                                 ),
-                                                SizedBox(
-                                                    height: height * 0.005),
-                                                Align(
-                                                  alignment: Alignment.topLeft,
-                                                  child: Text(
-                                                    'Hey, Enter your details to get sign in \nto your account.',
-                                                    style: AppTextStyles.nomal
-                                                        .copyWith(
-                                                            fontSize:
-                                                                conditionTablet
-                                                                    ? 18
-                                                                    : 14,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: AppColors
-                                                                .blueDarkColor),
-                                                  ),
-                                                ),
+
                                                 SizedBox(height: height * 0.03),
                                                 Align(
                                                   alignment: Alignment.topLeft,
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.only(
-                                                            left: 16.0),
+                                                    const EdgeInsets.only(
+                                                        left: 16.0),
                                                     child: Text(
-                                                      'User Name',
+                                                      'Email',
                                                       style: AppTextStyles.nomal
                                                           .copyWith(
                                                         fontSize:
-                                                            conditionTablet
-                                                                ? 18
-                                                                : 14,
+                                                        conditionTablet
+                                                            ? 18
+                                                            : 14,
                                                         color: AppColors
                                                             .blueDarkColor,
                                                         fontWeight:
-                                                            FontWeight.w700,
+                                                        FontWeight.w700,
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                                SizedBox(height: height * 0.02),
+                                                SizedBox(height: height * 0.01),
                                                 FormBuilderTextField(
-                                                  controller: _mailController,
                                                   onSaved: (val) {
                                                     email = val;
                                                   },
@@ -172,20 +152,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                                   decoration: InputDecoration(
                                                       labelText: 'Email',
                                                       border:
-                                                          OutlineInputBorder(
+                                                      OutlineInputBorder(
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(24),
+                                                        BorderRadius
+                                                            .circular(24),
                                                         borderSide: BorderSide(
                                                             color: Colors
                                                                 .transparent,
                                                             width: 0),
                                                       ),
                                                       enabledBorder:
-                                                          OutlineInputBorder(
+                                                      OutlineInputBorder(
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(24),
+                                                        BorderRadius
+                                                            .circular(24),
                                                         borderSide: BorderSide(
                                                             color: Colors
                                                                 .transparent,
@@ -195,73 +175,142 @@ class _SignInScreenState extends State<SignInScreen> {
                                                           Icons.mail_outline),
                                                       filled: true,
                                                       fillColor:
-                                                          AppColors.grayMain,
+                                                      AppColors.grayMain,
                                                       hintText: 'Enter Email',
                                                       hintStyle: TextStyle(
                                                           fontSize: 14,
                                                           fontWeight:
-                                                              FontWeight.w400,
+                                                          FontWeight.w400,
                                                           color: AppColors
                                                               .blueDarkColor
                                                               .withOpacity(
-                                                                  0.5))),
+                                                              0.5))),
                                                   validator:
-                                                      FormBuilderValidators
-                                                          .compose([
+                                                  FormBuilderValidators
+                                                      .compose([
                                                     FormBuilderValidators
                                                         .required(),
                                                     FormBuilderValidators
                                                         .email(),
                                                   ]),
                                                 ),
-                                                SizedBox(height: height * 0.03),
+                                                SizedBox(height: height * 0.02),
                                                 Align(
                                                   alignment: Alignment.topLeft,
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.only(
-                                                            left: 16.0),
+                                                    const EdgeInsets.only(
+                                                        left: 16.0),
                                                     child: Text(
-                                                      'Password',
+                                                      'Full Name',
                                                       style: AppTextStyles.nomal
                                                           .copyWith(
                                                         fontSize:
-                                                            conditionTablet
-                                                                ? 18
-                                                                : 14,
+                                                        conditionTablet
+                                                            ? 18
+                                                            : 14,
                                                         color: AppColors
                                                             .blueDarkColor,
                                                         fontWeight:
-                                                            FontWeight.w700,
+                                                        FontWeight.w700,
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                                SizedBox(height: height * 0.02),
+                                                SizedBox(height: height * 0.01),
                                                 FormBuilderTextField(
-                                                  name: 'password',
-                                                  controller: _passController,
-                                                  obscureText: true,
                                                   onSaved: (val) {
-                                                    password = val;
+                                                    fullName = val;
                                                   },
+                                                  name: 'fullName',
                                                   decoration: InputDecoration(
-                                                      labelText: 'Password',
+                                                      labelText: 'Full Name',
                                                       border:
-                                                          OutlineInputBorder(
+                                                      OutlineInputBorder(
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(24),
+                                                        BorderRadius
+                                                            .circular(24),
                                                         borderSide: BorderSide(
                                                             color: Colors
                                                                 .transparent,
                                                             width: 0),
                                                       ),
                                                       enabledBorder:
-                                                          OutlineInputBorder(
+                                                      OutlineInputBorder(
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(24),
+                                                        BorderRadius
+                                                            .circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent,
+                                                            width: 0),
+                                                      ),
+                                                      prefixIcon: Icon(
+                                                          Icons.person_outline),
+                                                      filled: true,
+                                                      fillColor:
+                                                      AppColors.grayMain,
+                                                      hintText: 'Enter Full Name',
+                                                      hintStyle: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          color: AppColors
+                                                              .blueDarkColor
+                                                              .withOpacity(
+                                                              0.5))),
+                                                  validator:
+                                                  FormBuilderValidators.compose([
+                                                    FormBuilderValidators.required(),
+                                                  ]),
+                                                ),
+                                                SizedBox(height: height * 0.02),
+                                                Align(
+                                                  alignment: Alignment.topLeft,
+                                                  child: Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(
+                                                        left: 16.0),
+                                                    child: Text(
+                                                      'Password',
+                                                      style: AppTextStyles.nomal
+                                                          .copyWith(
+                                                        fontSize:
+                                                        conditionTablet
+                                                            ? 18
+                                                            : 14,
+                                                        color: AppColors
+                                                            .blueDarkColor,
+                                                        fontWeight:
+                                                        FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(height: height * 0.01),
+                                                FormBuilderTextField(
+                                                  name: 'password',
+                                                  onSaved: (val) {
+                                                    password = val;
+                                                  },
+                                                  obscureText: true,
+                                                  decoration: InputDecoration(
+                                                      labelText: 'Password',
+                                                      border:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent,
+                                                            width: 0),
+                                                      ),
+                                                      enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(24),
                                                         borderSide: BorderSide(
                                                             color: Colors
                                                                 .transparent,
@@ -271,46 +320,90 @@ class _SignInScreenState extends State<SignInScreen> {
                                                           Icons.lock_outline),
                                                       filled: true,
                                                       fillColor:
-                                                          AppColors.grayMain,
+                                                      AppColors.grayMain,
                                                       hintText:
-                                                          'Enter Password',
+                                                      'Enter Password',
                                                       hintStyle: TextStyle(
                                                           fontSize: 14,
                                                           fontWeight:
-                                                              FontWeight.w400,
+                                                          FontWeight.w400,
                                                           color: AppColors
                                                               .blueDarkColor
                                                               .withOpacity(
-                                                                  0.5))),
+                                                              0.5))),
                                                   validator:
-                                                      FormBuilderValidators
-                                                          .compose([
+                                                  FormBuilderValidators
+                                                      .compose([
                                                     FormBuilderValidators
                                                         .required(),
+                                                    FormBuilderValidators.minLength(6)
                                                   ]),
                                                 ),
-                                                SizedBox(height: height * 0.01),
+                                                SizedBox(height: height * 0.02),
                                                 Align(
-                                                  alignment:
-                                                      Alignment.centerRight,
-                                                  child: TextButton(
-                                                    onPressed: () {},
+                                                  alignment: Alignment.topLeft,
+                                                  child: Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(
+                                                        left: 16.0),
                                                     child: Text(
-                                                      'Forgot Password?',
+                                                      'Confirm Password',
                                                       style: AppTextStyles.nomal
                                                           .copyWith(
                                                         fontSize:
-                                                            conditionTablet
-                                                                ? 18
-                                                                : 14,
-                                                        color:
-                                                            AppColors.blueMain,
+                                                        conditionTablet
+                                                            ? 18
+                                                            : 14,
+                                                        color: AppColors
+                                                            .blueDarkColor,
                                                         fontWeight:
-                                                            FontWeight.w600,
+                                                        FontWeight.w700,
                                                       ),
                                                     ),
                                                   ),
                                                 ),
+                                                SizedBox(height: height * 0.01),
+                                                FormBuilderTextField(
+                                                  name: 'comfirmpassword',
+                                                  onSaved: (val) {
+                                                    conFirmPassword = val;
+                                                  },
+                                                  obscureText: true,
+                                                  decoration: InputDecoration(
+                                                      labelText: 'Confirm Password',
+                                                      border:
+                                                      OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(24),
+                                                        borderSide: BorderSide(color: Colors.transparent,
+                                                            width: 0),
+                                                      ),
+                                                      enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors.transparent, width: 0),
+                                                      ),
+                                                      prefixIcon: Icon(
+                                                          Icons.lock_outline),
+                                                      filled: true,
+                                                      fillColor:
+                                                      AppColors.grayMain,
+                                                      hintText:
+                                                      'Enter Confirm Password',
+                                                      hintStyle: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          color: AppColors
+                                                              .blueDarkColor
+                                                              .withOpacity(
+                                                              0.5))),
+                                                  validator: FormBuilderValidators.compose([
+                                                    FormBuilderValidators.required(),
+                                                    FormBuilderValidators.minLength(6)
+                                                    ]),
+                                                ),
+
                                                 SizedBox(height: height * 0.06),
                                                 ElevatedButton(
                                                     style: AppButtonStyle
@@ -320,8 +413,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                               null &&
                                                           _formKey.currentState!
                                                               .saveAndValidate()) {
-                                                        OnSignInClicked(
-                                                            email, password);
+                                                        OnSignUpClicked(email, password,fullName);
                                                       }
                                                     },
                                                     child: Text(
@@ -337,78 +429,6 @@ class _SignInScreenState extends State<SignInScreen> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(height: height * 0.06),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Divider(
-                                              color: AppColors.primaryColor,
-                                            ),
-                                          ),
-                                          Text(
-                                            ' Or Connect With ',
-                                            style: AppTextStyles.nomal.copyWith(
-                                                fontSize:
-                                                    conditionTablet ? 18 : 14,
-                                                fontWeight: FontWeight.w700,
-                                                color: AppColors.blueDarkColor),
-                                          ),
-                                          Expanded(
-                                            child: Divider(
-                                              color: AppColors.primaryColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: height * 0.04),
-                                      Row(
-                                        children: [
-                                          Expanded(child: Container()),
-                                          conditionTablet
-                                              ? Expanded(child: Container())
-                                              : SizedBox(),
-                                          Expanded(
-                                            child: FractionallySizedBox(
-                                              widthFactor: 0.5,
-                                              child: FittedBox(
-                                                fit: BoxFit.fill,
-                                                child: ElevatedButton(
-                                                  onPressed: () {},
-                                                  child: Image.asset(
-                                                      ImageHelper.facebook_1),
-                                                  style: AppButtonStyle
-                                                      .iConButtonCircle,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: FractionallySizedBox(
-                                              widthFactor: 0.5,
-                                              child: FittedBox(
-                                                fit: BoxFit.fill,
-                                                child: ElevatedButton(
-                                                  onPressed: () async {
-                                                    await FirebaseService()
-                                                        .signInWithGoogle(
-                                                            context);
-                                                  },
-                                                  child: Image.asset(ImageHelper
-                                                      .google_plus_1),
-                                                  style: AppButtonStyle
-                                                      .iConButtonCircle,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          conditionTablet
-                                              ? Expanded(child: Container())
-                                              : SizedBox(),
-                                          Expanded(child: Container()),
-                                        ],
-                                      )
                                     ],
                                   ),
                                 )),
@@ -509,6 +529,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                                 .blueDarkColor),
                                                   ),
                                                 ),
+
                                                 SizedBox(height: height * 0.03),
                                                 Align(
                                                   alignment: Alignment.topLeft,
@@ -517,7 +538,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                         const EdgeInsets.only(
                                                             left: 16.0),
                                                     child: Text(
-                                                      'User Name',
+                                                      'Email',
                                                       style: AppTextStyles.nomal
                                                           .copyWith(
                                                         fontSize:
@@ -532,9 +553,11 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     ),
                                                   ),
                                                 ),
-                                                SizedBox(height: height * 0.02),
+                                                SizedBox(height: height * 0.01),
                                                 FormBuilderTextField(
-                                                  controller: _mailController,
+                                                  onSaved: (val) {
+                                                    email = val;
+                                                  },
                                                   name: 'email',
                                                   decoration: InputDecoration(
                                                       labelText: 'Email',
@@ -581,7 +604,77 @@ class _SignInScreenState extends State<SignInScreen> {
                                                         .email(),
                                                   ]),
                                                 ),
-                                                SizedBox(height: height * 0.03),
+                                                SizedBox(height: height * 0.02),
+                                                Align(
+                                                  alignment: Alignment.topLeft,
+                                                  child: Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(
+                                                        left: 16.0),
+                                                    child: Text(
+                                                      'Full Name',
+                                                      style: AppTextStyles.nomal
+                                                          .copyWith(
+                                                        fontSize:
+                                                        conditionTablet
+                                                            ? 18
+                                                            : 14,
+                                                        color: AppColors
+                                                            .blueDarkColor,
+                                                        fontWeight:
+                                                        FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(height: height * 0.01),
+                                                FormBuilderTextField(
+                                                  onSaved: (val) {
+                                                    fullName = val;
+                                                  },
+                                                  name: 'fullName',
+                                                  decoration: InputDecoration(
+                                                      labelText: 'Full Name',
+                                                      border:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent,
+                                                            width: 0),
+                                                      ),
+                                                      enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent,
+                                                            width: 0),
+                                                      ),
+                                                      prefixIcon: Icon(
+                                                          Icons.person_outline),
+                                                      filled: true,
+                                                      fillColor:
+                                                      AppColors.grayMain,
+                                                      hintText: 'Enter Full Name',
+                                                      hintStyle: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          color: AppColors
+                                                              .blueDarkColor
+                                                              .withOpacity(
+                                                              0.5))),
+                                                  validator:
+                                                  FormBuilderValidators.compose([
+                                                    FormBuilderValidators.required(),
+                                                  ]),
+                                                ),
+                                                SizedBox(height: height * 0.02),
                                                 Align(
                                                   alignment: Alignment.topLeft,
                                                   child: Padding(
@@ -604,9 +697,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     ),
                                                   ),
                                                 ),
-                                                SizedBox(height: height * 0.02),
+                                                SizedBox(height: height * 0.01),
                                                 FormBuilderTextField(
                                                   name: 'password',
+                                                  onSaved: (val) {
+                                                    password = val;
+                                                  },
                                                   obscureText: true,
                                                   decoration: InputDecoration(
                                                       labelText: 'Password',
@@ -650,41 +746,97 @@ class _SignInScreenState extends State<SignInScreen> {
                                                           .compose([
                                                     FormBuilderValidators
                                                         .required(),
+                                                        FormBuilderValidators.minLength(6)
                                                   ]),
                                                 ),
-                                                SizedBox(height: height * 0.01),
+                                                SizedBox(height: height * 0.02),
                                                 Align(
-                                                  alignment:
-                                                      Alignment.centerRight,
-                                                  child: TextButton(
-                                                    onPressed: () {},
+                                                  alignment: Alignment.topLeft,
+                                                  child: Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(
+                                                        left: 16.0),
                                                     child: Text(
-                                                      'Forgot Password?',
+                                                      'Confirm Password',
                                                       style: AppTextStyles.nomal
                                                           .copyWith(
                                                         fontSize:
-                                                            conditionTablet
-                                                                ? 18
-                                                                : 14,
-                                                        color:
-                                                            AppColors.blueMain,
+                                                        conditionTablet
+                                                            ? 18
+                                                            : 14,
+                                                        color: AppColors
+                                                            .blueDarkColor,
                                                         fontWeight:
-                                                            FontWeight.w600,
+                                                        FontWeight.w700,
                                                       ),
                                                     ),
                                                   ),
                                                 ),
+                                                SizedBox(height: height * 0.01),
+                                                FormBuilderTextField(
+                                                  name: 'comfirmpassword',
+                                                  onSaved: (val) {
+                                                    conFirmPassword = val;
+                                                  },
+                                                  obscureText: true,
+                                                  decoration: InputDecoration(
+                                                      labelText: 'Confirm Password',
+                                                      border:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent,
+                                                            width: 0),
+                                                      ),
+                                                      enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(24),
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent,
+                                                            width: 0),
+                                                      ),
+                                                      prefixIcon: Icon(
+                                                          Icons.lock_outline),
+                                                      filled: true,
+                                                      fillColor:
+                                                      AppColors.grayMain,
+                                                      hintText:
+                                                      'Enter Confirm Password',
+                                                      hintStyle: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          color: AppColors
+                                                              .blueDarkColor
+                                                              .withOpacity(
+                                                              0.5))),
+                                                  validator:
+                                                  FormBuilderValidators
+                                                      .compose([
+                                                    FormBuilderValidators
+                                                        .required(),
+                                                    FormBuilderValidators.minLength(6)
+                                                  ]),
+                                                ),
+
                                                 SizedBox(height: height * 0.06),
                                                 ElevatedButton(
                                                     style: AppButtonStyle
                                                         .buttonPrimary,
                                                     onPressed: () async {
-                                                      if (_formKey.currentState !=
-                                                              null &&
-                                                          _formKey.currentState!
-                                                              .saveAndValidate()) {
-                                                        OnSignInClicked(
-                                                            email, password);
+                                                      if (_formKey.currentState != null &&
+                                                          _formKey.currentState!.saveAndValidate()) {
+                                                          if(password == conFirmPassword){
+                                                            OnSignUpClicked(email, password,fullName);
+                                                          }else{
+                                                            _formKey.currentState!.invalidateField(name: 'comfirmpassword',errorText: "Confirm Password not match");
+                                                          }
                                                       }
                                                     },
                                                     child: Text(
@@ -700,78 +852,6 @@ class _SignInScreenState extends State<SignInScreen> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(height: height * 0.06),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Divider(
-                                              color: AppColors.primaryColor,
-                                            ),
-                                          ),
-                                          Text(
-                                            ' Or Connect With ',
-                                            style: AppTextStyles.nomal.copyWith(
-                                                fontSize:
-                                                    conditionTablet ? 18 : 14,
-                                                fontWeight: FontWeight.w700,
-                                                color: AppColors.blueDarkColor),
-                                          ),
-                                          Expanded(
-                                            child: Divider(
-                                              color: AppColors.primaryColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: height * 0.04),
-                                      Row(
-                                        children: [
-                                          Expanded(child: Container()),
-                                          conditionTablet
-                                              ? Expanded(child: Container())
-                                              : SizedBox(),
-                                          Expanded(
-                                            child: FractionallySizedBox(
-                                              widthFactor: 0.5,
-                                              child: FittedBox(
-                                                fit: BoxFit.fill,
-                                                child: ElevatedButton(
-                                                  onPressed: () async {},
-                                                  child: Image.asset(
-                                                      ImageHelper.facebook_1),
-                                                  style: AppButtonStyle
-                                                      .iConButtonCircle,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: FractionallySizedBox(
-                                              widthFactor: 0.5,
-                                              child: FittedBox(
-                                                fit: BoxFit.fill,
-                                                child: ElevatedButton(
-                                                  onPressed: () async {
-                                                    await FirebaseService()
-                                                        .signInWithGoogle(
-                                                            context);
-                                                  },
-                                                  child: Image.asset(ImageHelper
-                                                      .google_plus_1),
-                                                  style: AppButtonStyle
-                                                      .iConButtonCircle,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          conditionTablet
-                                              ? Expanded(child: Container())
-                                              : SizedBox(),
-                                          Expanded(child: Container()),
-                                        ],
-                                      )
                                     ],
                                   ),
                                 )),
@@ -789,26 +869,12 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  void OnSignInClicked(String emailAddress, String password) async {
-    if (await FirebaseService()
-            .signInWithEmailAndPassword(emailAddress, password, context) !=
-        null) {
-    } else {
-      showDialog(
-          context: context,
-          builder: (builder) {
-            return CupertinoAlertDialog(
-              title: Text('The account is incorrect or does not exist'),
-              actions: [
-                CupertinoDialogAction(
-                  child: Text('Ok'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )
-              ],
-            );
-          });
+  void OnSignUpClicked(String emailAddress, String password,String fullName) async {
+    if(SignUpController.instance.registerUser(emailAddress,password,fullName,'')){
+
+    }else{
+      DialogHelper.hideLoading();
+      DialogHelper.alertDialog('The account already exists for that email');
     }
   }
 }

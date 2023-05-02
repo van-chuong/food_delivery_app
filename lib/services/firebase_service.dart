@@ -1,39 +1,63 @@
-
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/screens/auth/home_screen.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../config/helper/local_storage_helper.dart';
 import '../screens/main_screen.dart';
-class FirebaseService{
+
+class FirebaseService {
   final _auth = FirebaseAuth.instance;
+  final _fireStore =  FirebaseFirestore.instance;
   final _googleSignIn = GoogleSignIn();
-  signInWithGoogle(context) async{
-    try{
-      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
-      if(googleSignInAccount != null){
-        final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+  // @override
+  // void onReady() {
+  //   Future.delayed(const Duration(seconds: 3));
+  //   firebaseUser = Rx<User?>(_auth.currentUser);
+  //   firebaseUser.bindStream(_auth.userChanges());
+  //   // ever(firebaseUser, _setInitialScreen);
+  // }
+
+  _setInitialScreen(User? user) {
+    user == null
+        ? Get.offAll(() => HomeScreen())
+        : Get.offAll(() => MainScreen());
+  }
+
+  signInWithGoogle(context) async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
         final AuthCredential authCredential = GoogleAuthProvider.credential(
-          accessToken: googleSignInAuthentication.accessToken,
-          idToken: googleSignInAuthentication.idToken
+            accessToken: googleSignInAuthentication.accessToken,
+            idToken: googleSignInAuthentication.idToken
         );
         await _auth.signInWithCredential(authCredential);
-        Navigator.of(context)
-            .pushNamed(MainScreen.routerName);
+        await saveUser(googleSignInAccount,_auth);
+        Get.offAll(() => MainScreen());
       }
-    }on FirebaseAuthException catch(e){
+    } on FirebaseAuthException catch (e) {
       print(e.message);
       throw e;
+    }catch (e){
+      print(e);
+      throw e;
+
     }
   }
-  Future<User?> signInWithEmailAndPassword(String emailAddress,String password,context) async{
+
+  Future<User?> signInWithEmailAndPassword(
+      String emailAddress, String password, context) async {
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailAddress,
-          password: password
-      );
-      Navigator.of(context)
-          .pushNamed(MainScreen.routerName);
+      final credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: emailAddress, password: password);
+      print('SignIn Success.');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
@@ -43,14 +67,52 @@ class FirebaseService{
     }
     return FirebaseAuth.instance.currentUser;
   }
-  signOut() async{
+
+  signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
+    Get.offAllNamed(HomeScreen.routerName);
+    //ever(firebaseUser, _setInitialScreen);
+  }
+  Future<FirebaseAuthException?> createUserWithEmailAndPassword(String emailAddress,String password,String fullName)async {
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: emailAddress,
+        password: password,
+      );
+      await _auth.currentUser?.updateDisplayName(fullName);
+      await _fireStore.collection('users').doc(_auth.currentUser?.uid).set({
+        'fullName': fullName,
+        'email': emailAddress,
+        'photoUrl' : null,
+        'phoneNo' : null,
+        'password' : null
+      });
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e;
+    } catch (e) {
+      throw(e);
+    }
   }
   Future<bool> checkUserIsLogged() async {
-    if (await _auth.currentUser! != null) {
+    if (_auth.currentUser != null) {
       return true;
     }
     return false;
+  }
+
+  saveUser(GoogleSignInAccount googleSignInAccount, FirebaseAuth auth) {
+    _fireStore.collection('users').doc(auth.currentUser?.uid).set({
+      'fullName': googleSignInAccount.displayName,
+      'email': googleSignInAccount.email,
+      'photoUrl' : googleSignInAccount.photoUrl,
+      'phoneNo' : null,
+      'password' : null
+      }
+    );
+  }
+  User? getCurrentUser(){
+    return _auth.currentUser;
   }
 }

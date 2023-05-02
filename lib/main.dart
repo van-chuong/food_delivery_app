@@ -4,14 +4,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/config/helper/local_storage_helper.dart';
 import 'package:food_delivery_app/config/routes/routes.dart';
-import 'package:food_delivery_app/screens/sign_in_screen.dart';
+import 'package:food_delivery_app/screens/auth/home_screen.dart';
+import 'package:food_delivery_app/screens/intro_screen.dart';
+import 'package:food_delivery_app/screens/main_screen.dart';
+import 'package:food_delivery_app/screens/auth/sign_in_screen.dart';
+import 'package:food_delivery_app/screens/product/products_screen.dart';
+import 'package:food_delivery_app/screens/splash_screen.dart';
 import 'package:food_delivery_app/screens/test.dart';
 import 'package:food_delivery_app/services/constants_firebase.dart';
+import 'package:food_delivery_app/services/firebase_service.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'config/themes/app_colors.dart';
-import 'package:responsive_sizer/responsive_sizer.dart';
-
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 void main() async {
+  
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Hive.initFlutter();
   await LocalStorageHelper.initLocalStorageHelper();
   if (kIsWeb) {
@@ -24,8 +33,20 @@ void main() async {
   } else {
     await Firebase.initializeApp();
   }
+  String initialRoute;
+  bool? ignoreIntroScreen = LocalStorageHelper.getValue('ignoreIntroScreen') as bool?;
+  if(await FirebaseService().checkUserIsLogged()){
+    initialRoute = MainScreen.routerName;
+  }else{
+    if (ignoreIntroScreen != null && ignoreIntroScreen) {
+      initialRoute = HomeScreen.routerName;
+    } else {
+      LocalStorageHelper.setValue('ignoreIntroScreen', true);
+      initialRoute = IntroScreen.routerName;
+    }
+  }
 
-  runApp(MyApp());
+  runApp(MyApp(initialRoute));
   // runApp(DevicePreview(
   //   enabled: !kReleaseMode,
   //   builder: (context) => MyApp(),
@@ -33,24 +54,22 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+  MyApp(this.initialRoute);
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveSizer(builder: (context, orientation, screenType) {
-      Device.setScreenSize(
-          context, Device.boxConstraints, Device.orientation, 600, 950);
-      return MaterialApp(
-        title: 'Food App',
-        theme: ThemeData(
-          primaryColor: AppColors.primaryColor,
-          scaffoldBackgroundColor: AppColors.bgWhite,
-          backgroundColor: AppColors.bgWhite,
-        ),
-        routes: routes,
-        debugShowCheckedModeBanner: false,
-        home: const SignInScreen(),
-      );
-    });
+    FlutterNativeSplash.remove();
+    return GetMaterialApp(
+      title: 'Food App',
+      theme: ThemeData(
+        primaryColor: AppColors.primaryColor,
+        scaffoldBackgroundColor: AppColors.bgWhite,
+        backgroundColor: AppColors.bgWhite,
+      ),
+      initialRoute: ProductsScreen.routerName,  //initialRoute,
+      getPages: Routes.pageRoutes,
+      debugShowCheckedModeBanner: false,
+    );
   }
 }

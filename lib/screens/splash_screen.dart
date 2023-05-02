@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_responsive/flutter_responsive.dart';
 import 'package:food_delivery_app/config/helper/image_helper.dart';
 import 'package:food_delivery_app/config/helper/local_storage_helper.dart';
-import 'package:food_delivery_app/screens/home_screen.dart';
+import 'package:food_delivery_app/screens/auth/home_screen.dart';
 import 'package:food_delivery_app/screens/intro_screen.dart';
+import 'package:get/get.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -23,33 +24,34 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void redirectIntroScreen() async {
-    await Future.delayed(const Duration(milliseconds: 2000));
     final ignoreIntroScreen =
         LocalStorageHelper.getValue('ignoreIntroScreen') as bool?;
     if (ignoreIntroScreen != null && ignoreIntroScreen) {
-      Navigator.of(context).pushNamed(HomeScreen.routerName);
+      Get.offAllNamed('/home_screen');
     } else {
       LocalStorageHelper.setValue('ignoreIntroScreen', true);
-      Navigator.of(context).pushNamed(IntroScreen.routerName);
+      Get.offAllNamed('/intro_screen');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    var condition = context.isLandscape ||
+        context.isDesktop;
     return Scaffold(
         body: Stack(
       children: [
         Positioned.fill(
               child: Image.asset(
                 ImageHelper.imgBgSplash,
-                fit: BoxFit.fill,
+                fit: BoxFit.fitWidth,
               ),
             ),
         Align(
           alignment: Alignment.center,
           child: FractionallySizedBox(
             heightFactor: 0.6,
-            widthFactor: 0.5,
+            widthFactor: condition?0.3:0.5,
             child: FittedBox(
               fit: BoxFit.fitWidth,
               child: Image.asset(
