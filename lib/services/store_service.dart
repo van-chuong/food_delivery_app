@@ -34,7 +34,7 @@ class StoreService {
   }
 
   Stream<List<ProductModel>> getPopularProducts() {
-    return _firestore.collection('products').snapshots().map((snapshot) =>
+    return _firestore.collection('products').limit(6).snapshots().map((snapshot) =>
         snapshot.docs
             .map((doc) =>
                 ProductModel.fromJson(doc.data() as Map<String, dynamic>))

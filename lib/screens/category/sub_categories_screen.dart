@@ -60,7 +60,7 @@ class SubCategoriesScreen extends StatelessWidget {
                           return Container(
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(24),
-                                color: index % 2 == 0
+                                color: index % 2 == 1
                                     ? AppColors.lightBlue
                                     : AppColors.lightPurple),
                             child: Stack(

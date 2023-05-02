@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:food_delivery_app/config/themes/app_text_styles.dart';
@@ -5,7 +6,10 @@ import 'package:food_delivery_app/screens/product/products_screen.dart';
 import 'package:food_delivery_app/services/firebase_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import '../../config/themes/app_colors.dart';
+import '../../controllers/favorite_controller.dart';
 import '../../controllers/home_view_controller.dart';
 import '../../models/Productmodel.dart';
 
@@ -14,7 +18,7 @@ class HomeViewScreen extends GetView<HomeViewController> {
   static String routerName = '/home_view_screen';
   final homeViewController = Get.put(HomeViewController());
   final _formKey = GlobalKey<FormBuilderState>();
-
+  final favoriteController = Get.put(FavoriteController());
   @override
   Widget build(BuildContext context) {
     var isDesktop = context.width > 1000;
@@ -279,7 +283,7 @@ class HomeViewScreen extends GetView<HomeViewController> {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          'Popular Dishes',
+                          'Recommended',
                           style: AppTextStyles.h1.copyWith(color: Colors.black),
                           textAlign: TextAlign.left,
                         ),
@@ -451,6 +455,49 @@ class HomeViewScreen extends GetView<HomeViewController> {
                                               ),
                                             ))
                                       ],
+                                    ),
+                                    Positioned(
+                                        top: 0, right:0,
+                                        child: Obx(()=>IconButton(
+                                          icon: Icon(
+                                            favoriteController.isFavorite(product.id)?Icons.favorite:Icons.favorite_border,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: (){
+                                            if(FirebaseAuth.instance.currentUser != null){
+                                              if(favoriteController.isFavorite(product.id)) {
+                                                favoriteController.removeFavorite(product.id);
+                                                showTopSnackBar(
+                                                  Overlay.of(context),
+                                                  displayDuration: Duration(milliseconds: 100),
+                                                  CustomSnackBar.error(
+                                                    message:
+                                                    "The product has been removed from your favorites",
+                                                  ),
+                                                );
+                                              }else{
+                                                favoriteController.addFavorite(product.id);
+                                                showTopSnackBar(
+                                                    Overlay.of(context),
+                                                  displayDuration: Duration(milliseconds: 100),
+                                                  CustomSnackBar.success(
+                                                    message:
+                                                    "The product has been added to your favorites",
+                                                  ),
+                                                );
+                                              }
+                                            }else{
+                                              showTopSnackBar(
+                                                Overlay.of(context),
+                                                displayDuration: Duration(milliseconds: 100),
+                                                CustomSnackBar.error(
+                                                  message:
+                                                  "You need to be logged in to add your favorite products",
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ))
                                     )
                                   ],
                                 ),

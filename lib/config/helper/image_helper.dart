@@ -13,4 +13,6 @@ class ImageHelper {
   static const String facebook_1 = '${imagePath}facebook_1.png';
   static const String google_plus_1 = '${imagePath}google_plus_1.png';
   static const String icMail = '${imagePath}mail_icon.png';
+  static const String imgEmptyBox = '${imagePath}box.png';
+  static const String imgAvatar = '${imagePath}avatar.png';
 }

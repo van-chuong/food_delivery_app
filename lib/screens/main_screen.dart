@@ -25,13 +25,12 @@ class _MainScreenState extends State<MainScreen> {
     return FlutterAdaptiveNavigationScaffold(
       labelDisplayType: LabelDisplayType.all,
       drawerWidthFraction: 0.15,
-
       destinations: [
         NavigationElement(
           icon: const Icon(Icons.home_outlined),
           selectedIcon:  Icon(Icons.home,color: AppColors.primaryColor),
           label: 'Home',
-          builder: () =>  HomeViewScreen(),
+          builder: () => HomeViewScreen(),
         ),
         NavigationElement(
           icon: const Icon(Icons.favorite_outline),

@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.bgWhite,
         backgroundColor: AppColors.bgWhite,
       ),
-      initialRoute: ProductsScreen.routerName,  //initialRoute,
+      initialRoute: MainScreen.routerName,  //initialRoute,
       getPages: Routes.pageRoutes,
       debugShowCheckedModeBanner: false,
     );

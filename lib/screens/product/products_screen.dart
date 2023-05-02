@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -200,7 +201,7 @@ class ProductsScreen extends GetView<ProductsController> {
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: productController.products.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: isDesktop ? 2 : 1,
+                          crossAxisCount: isDesktop ? 3 : 1,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 20,
                           childAspectRatio: isDesktop ? 2.8 : 2.5,
@@ -331,7 +332,8 @@ class ProductsScreen extends GetView<ProductsController> {
                                         color: Colors.red,
                                       ),
                                       onPressed: (){
-                                        if(favoriteController.isFavorite(product.id)) {
+                                        if(FirebaseAuth.instance.currentUser != null){
+                                          if(favoriteController.isFavorite(product.id)) {
                                             favoriteController.removeFavorite(product.id);
                                             showTopSnackBar(
                                               overlayState,
@@ -341,14 +343,25 @@ class ProductsScreen extends GetView<ProductsController> {
                                                 "The product has been removed from your favorites",
                                               ),
                                             );
-                                          }else{
-                                          favoriteController.addFavorite(product.id);
+                                          }
+                                          else{
+                                            favoriteController.addFavorite(product.id);
+                                            showTopSnackBar(
+                                              overlayState,
+                                              displayDuration: Duration(milliseconds: 100),
+                                              CustomSnackBar.success(
+                                                message:
+                                                "The product has been added to your favorites",
+                                              ),
+                                            );
+                                          }
+                                        }else{
                                           showTopSnackBar(
                                             overlayState,
                                             displayDuration: Duration(milliseconds: 100),
-                                            CustomSnackBar.success(
+                                            CustomSnackBar.error(
                                               message:
-                                              "The product has been added to your favorites",
+                                              "You need to be logged in to add your favorite products",
                                             ),
                                           );
                                         }
