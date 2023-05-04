@@ -186,12 +186,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                               .withOpacity(
                                                               0.5))),
                                                   validator:
-                                                  FormBuilderValidators
-                                                      .compose([
-                                                    FormBuilderValidators
-                                                        .required(),
-                                                    FormBuilderValidators
-                                                        .email(),
+                                                  FormBuilderValidators.compose([
+                                                    FormBuilderValidators.required(),
+                                                    FormBuilderValidators.email(),
                                                   ]),
                                                 ),
                                                 SizedBox(height: height * 0.02),
@@ -409,11 +406,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     style: AppButtonStyle
                                                         .buttonPrimary,
                                                     onPressed: () async {
-                                                      if (_formKey.currentState !=
-                                                              null &&
-                                                          _formKey.currentState!
-                                                              .saveAndValidate()) {
-                                                        OnSignUpClicked(email, password,fullName);
+                                                      if (_formKey.currentState != null &&
+                                                          _formKey.currentState!.saveAndValidate()) {
+                                                        if(password == conFirmPassword){
+                                                          OnSignUpClicked(email, password,fullName);
+                                                        }else{
+                                                          _formKey.currentState!.invalidateField(name: 'comfirmpassword',errorText: "Confirm Password not match");
+                                                        }
                                                       }
                                                     },
                                                     child: Text(

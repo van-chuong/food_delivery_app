@@ -55,6 +55,8 @@ dependencies:
   cloud_firestore: ^4.5.2
   googleapis: ^11.0.0
   googleapis_auth: ^1.4.0
+  #Storage
+  firebase_storage: ^11.1.1
   # GetX Management
   get: ^4.6.5
   # Rating Bar
@@ -63,9 +65,15 @@ dependencies:
   dropdown_button2: ^2.1.0
   # Top SnackBar
   top_snackbar_flutter: ^3.0.0+1
+  # Date Picker
+  flutter_datetime_picker: ^1.5.1
+  #Image Picker
+  image_picker: ^0.8.5
   #Splash
   flutter_native_splash: ^2.2.19
   flutter_adaptive_navigation: ^0.0.4
+
+
 
 dev_dependencies:
   flutter_test:

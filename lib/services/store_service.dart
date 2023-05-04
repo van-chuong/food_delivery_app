@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 import '../config/helper/random_string_helper.dart';
+import '../models/CartItemModel.dart';
 import '../models/CategoryModel.dart';
 import '../models/Productmodel.dart';
 
@@ -34,8 +35,8 @@ class StoreService {
   }
 
   Stream<List<ProductModel>> getPopularProducts() {
-    return _firestore.collection('products').limit(6).snapshots().map((snapshot) =>
-        snapshot.docs
+    return _firestore.collection('products').limit(6).snapshots().map(
+        (snapshot) => snapshot.docs
             .map((doc) =>
                 ProductModel.fromJson(doc.data() as Map<String, dynamic>))
             .toList());
@@ -128,10 +129,19 @@ class StoreService {
         .map((snap) => List<String>.from(snap.data()!['productIds']));
   }
 
-  Future<void> addFavorite(String userId, String productId) {
-    return _firestore.collection('favorites').doc(userId).update({
-      'productIds': FieldValue.arrayUnion([productId]),
-    });
+  Future<void> addFavorite(String userId, String productId) async {
+    final DocumentReference docRef =
+        _firestore.collection('favorites').doc(userId);
+    final docSnapshot = await docRef.get();
+    if (!docSnapshot.exists) {
+      await docRef.set({
+        'productIds': [productId],
+      });
+    } else {
+      await docRef.update({
+        'productIds': FieldValue.arrayUnion([productId]),
+      });
+    }
   }
 
   Future<void> removeFavorite(String userId, String productId) {
@@ -139,11 +149,16 @@ class StoreService {
       'productIds': FieldValue.arrayRemove([productId]),
     });
   }
+
   Future<ProductModel> getProductById(String productId) async {
     try {
-      DocumentSnapshot productDoc = await FirebaseFirestore.instance.collection('products').doc(productId).get();
+      DocumentSnapshot productDoc = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(productId)
+          .get();
       if (productDoc.exists) {
-        return ProductModel.fromJson(productDoc.data()!as Map<String, dynamic>);
+        return ProductModel.fromJson(
+            productDoc.data()! as Map<String, dynamic>);
       } else {
         throw Exception("Product not found!");
       }
@@ -152,22 +167,41 @@ class StoreService {
     }
   }
 
-  // Future<List<ProductModel>> getFavoriteProducts(List<String> productIds) async {
-  //   final products = <ProductModel>[];
-  //   try {
-  //     final snapshot = await _firestore.collection('products')
-  //         .where(FieldPath.documentId, whereIn: productIds)
-  //         .get();
-  //     if (snapshot.docs.isNotEmpty) {
-  //       for (final doc in snapshot.docs) {
-  //         final product = ProductModel.fromJson(doc.data());
-  //         products.add(product);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error getting products for category: $e');
-  //   }
-  //   return products;
-  //
-  // }
+  Stream<List<CartItemModel>> getCartItems(String? uid) {
+    if (uid == null) {
+      return Stream.empty();
+    }
+    return _firestore
+        .collection('shopping_cart')
+        .doc(uid)
+        .collection('products')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => CartItemModel.fromJson(doc.data()))
+            .toList());
+  }
+  Future<bool> addCartItem(String uid, CartItemModel cartItem) async {
+    try{
+      final cartItemRef = _firestore
+          .collection('shopping_cart')
+          .doc(uid)
+          .collection('products')
+          .doc(cartItem.id);
+      final cartItemData = cartItem.toJson();
+      await cartItemRef.get().then((docSnapshot) async {
+        if (docSnapshot.exists) {
+          cartItemData['quantity'] = (docSnapshot.data()!['quantity'] ?? 0) + 1;
+          await cartItemRef.update(cartItemData);
+        } else {
+          await cartItemRef.set(cartItemData);
+        }
+      });
+      return true;
+    }catch(e){
+      print('Error add product to cart: $e');
+      return false;
+    }
+  }
+
+
 }

@@ -15,4 +15,6 @@ class ImageHelper {
   static const String icMail = '${imagePath}mail_icon.png';
   static const String imgEmptyBox = '${imagePath}box.png';
   static const String imgAvatar = '${imagePath}avatar.png';
+  static const String imgError = '${imagePath}error_message.png';
+  static const String imgAvatarNet = 'https://firebasestorage.googleapis.com/v0/b/flutter-food-1a10d.appspot.com/o/images%2Favatar.png?alt=media&token=8d6b1806-bb94-4391-8977-aed51aa9efb5';
 }

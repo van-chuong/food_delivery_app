@@ -788,7 +788,7 @@ class _SignInScreenState extends State<SignInScreen> {
     if (await FirebaseService()
             .signInWithEmailAndPassword(emailAddress, password, context) !=
         null) {
-      Get.offAll(() => MainScreen());
+      Get.offAllNamed(MainScreen.routerName);
     } else {
       DialogHelper.hideLoading();
       DialogHelper.alertDialog('The account is incorrect or does not exist');

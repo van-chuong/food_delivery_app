@@ -8,7 +8,9 @@ import 'package:food_delivery_app/screens/auth/home_screen.dart';
 import 'package:food_delivery_app/screens/intro_screen.dart';
 import 'package:food_delivery_app/screens/main_screen.dart';
 import 'package:food_delivery_app/screens/auth/sign_in_screen.dart';
+import 'package:food_delivery_app/screens/profile/change_password_screen.dart';
 import 'package:food_delivery_app/screens/product/products_screen.dart';
+import 'package:food_delivery_app/screens/profile/my_profile_sreen.dart';
 import 'package:food_delivery_app/screens/splash_screen.dart';
 import 'package:food_delivery_app/screens/test.dart';
 import 'package:food_delivery_app/services/constants_firebase.dart';
@@ -67,7 +69,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.bgWhite,
         backgroundColor: AppColors.bgWhite,
       ),
-      initialRoute: MainScreen.routerName,  //initialRoute,
+      initialRoute: initialRoute,  //initialRoute,
       getPages: Routes.pageRoutes,
       debugShowCheckedModeBanner: false,
     );

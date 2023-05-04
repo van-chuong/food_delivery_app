@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/config/themes/app_colors.dart';
 import 'package:get/get.dart';
 
 class DialogHelper {
@@ -9,7 +10,9 @@ class DialogHelper {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(),
+            CircularProgressIndicator(
+              color: AppColors.primaryColor,
+            ),
             SizedBox(
               height: 10,
             ),

@@ -18,6 +18,7 @@ class HomeViewController extends GetxController{
   var categories = <CategoryModel>[].obs;
   var subCategories = <CategoryModel>[].obs;
   var popularProducts = <ProductModel>[].obs;
+  var itemCart = 4.obs;
   void refreshSubCategories(String value){
     subCategories.bindStream(_storeService.getSubCategories(value));
   }

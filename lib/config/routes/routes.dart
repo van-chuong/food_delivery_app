@@ -5,10 +5,13 @@ import 'package:food_delivery_app/screens/auth/sign_in_screen.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
 import '../../screens/auth/home_screen.dart';
 import '../../screens/auth/sign_up_screen.dart';
+import '../../screens/cart/cart_screen.dart';
 import '../../screens/category/sub_categories_screen.dart';
 import '../../screens/intro_screen.dart';
 import '../../screens/pages/home_view_screen.dart';
+import '../../screens/profile/change_password_screen.dart';
 import '../../screens/product/products_screen.dart';
+import '../../screens/profile/my_profile_sreen.dart';
 import '../../screens/splash_screen.dart';
 
 class Routes {
@@ -22,6 +25,9 @@ class Routes {
     GetPage(name: HomeViewScreen.routerName, page: () => HomeViewScreen()),
     GetPage(name: SubCategoriesScreen.routerName, page: () => SubCategoriesScreen()),
     GetPage(name: ProductsScreen.routerName, page: () => ProductsScreen()),
+    GetPage(name: MyProfileScreen.routerName, page: () => MyProfileScreen()),
+    GetPage(name: ChangePasswordScreen.routerName, page: () => ChangePasswordScreen()),
+    GetPage(name: CartScreen.routerName, page: () => CartScreen()),
   ];
   static Map<String, WidgetBuilder> routes = {
     SplashScreen.routerName: (context) => SplashScreen(),

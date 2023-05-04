@@ -8,6 +8,7 @@ import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../config/themes/app_colors.dart';
 import '../../config/themes/app_text_styles.dart';
+import '../../controllers/cart_controller.dart';
 import '../../controllers/favorite_controller.dart';
 import '../../controllers/product_controller.dart';
 import '../../models/CategoryModel.dart';
@@ -15,13 +16,14 @@ import '../../models/Productmodel.dart';
 
 class ProductsScreen extends GetView<ProductsController> {
   static String routerName = '/products_screen';
-  
+
   @override
   Widget build(BuildContext context) {
     final productController = Get.put(ProductsController());
     final favoriteController = Get.put(FavoriteController());
+    final cartController = Get.put(CartController());
     var isDesktop = context.width > 1000;
-    final overlayState = Overlay.of(context)!;
+    final overlayState = Overlay.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -297,7 +299,38 @@ class ProductsScreen extends GetView<ProductsController> {
                                                   Expanded(
                                                       flex: 2,
                                                       child: ElevatedButton(
-                                                        onPressed: () {},
+                                                        onPressed: () async {
+                                                          if(cartController.user?.uid !=null){
+                                                            if(await cartController.addToCart(product)){
+                                                              showTopSnackBar(
+                                                                Overlay.of(context),
+                                                                displayDuration: Duration(milliseconds: 100),
+                                                                const CustomSnackBar.success(
+                                                                  message:
+                                                                  "The product has been added to cart",
+                                                                ),
+                                                              );
+                                                            }else{
+                                                              showTopSnackBar(
+                                                                Overlay.of(context),
+                                                                displayDuration: Duration(milliseconds: 100),
+                                                                const CustomSnackBar.error(
+                                                                  message:
+                                                                  "An error occurred, please try again later",
+                                                                ),
+                                                              );
+                                                            }
+                                                          }else{
+                                                            showTopSnackBar(
+                                                              Overlay.of(context),
+                                                              displayDuration: Duration(milliseconds: 100),
+                                                              const CustomSnackBar.error(
+                                                                message:
+                                                                "Please login to perform this action",
+                                                              ),
+                                                            );
+                                                          }
+                                                        },
                                                         style: ElevatedButton
                                                             .styleFrom(
                                                           backgroundColor:

@@ -6,11 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../config/helper/local_storage_helper.dart';
+import '../models/UserModel.dart';
 import '../screens/main_screen.dart';
 
 class FirebaseService {
   final _auth = FirebaseAuth.instance;
-  final _fireStore =  FirebaseFirestore.instance;
+  final _fireStore = FirebaseFirestore.instance;
   final _googleSignIn = GoogleSignIn();
 
   // @override
@@ -36,19 +37,17 @@ class FirebaseService {
             await googleSignInAccount.authentication;
         final AuthCredential authCredential = GoogleAuthProvider.credential(
             accessToken: googleSignInAuthentication.accessToken,
-            idToken: googleSignInAuthentication.idToken
-        );
+            idToken: googleSignInAuthentication.idToken);
         await _auth.signInWithCredential(authCredential);
-        await saveUser(googleSignInAccount,_auth);
+        await saveUser(googleSignInAccount, _auth);
         Get.offAll(() => MainScreen());
       }
     } on FirebaseAuthException catch (e) {
       print(e.message);
       throw e;
-    }catch (e){
+    } catch (e) {
       print(e);
       throw e;
-
     }
   }
 
@@ -71,10 +70,10 @@ class FirebaseService {
   signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
-    Get.offAllNamed(HomeScreen.routerName);
-    //ever(firebaseUser, _setInitialScreen);
   }
-  Future<FirebaseAuthException?> createUserWithEmailAndPassword(String emailAddress,String password,String fullName)async {
+
+  Future<FirebaseAuthException?> createUserWithEmailAndPassword(
+      String emailAddress, String password, String fullName) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: emailAddress,
@@ -84,17 +83,18 @@ class FirebaseService {
       await _fireStore.collection('users').doc(_auth.currentUser?.uid).set({
         'fullName': fullName,
         'email': emailAddress,
-        'photoUrl' : null,
-        'phoneNo' : null,
-        'password' : null
+        'photoUrl': null,
+        'phoneNo': null,
+        'password': null
       });
       return null;
     } on FirebaseAuthException catch (e) {
       return e;
     } catch (e) {
-      throw(e);
+      throw (e);
     }
   }
+
   Future<bool> checkUserIsLogged() async {
     if (_auth.currentUser != null) {
       return true;
@@ -106,13 +106,59 @@ class FirebaseService {
     _fireStore.collection('users').doc(auth.currentUser?.uid).set({
       'fullName': googleSignInAccount.displayName,
       'email': googleSignInAccount.email,
-      'photoUrl' : googleSignInAccount.photoUrl,
-      'phoneNo' : null,
-      'password' : null
-      }
-    );
+      'photoUrl': googleSignInAccount.photoUrl,
+      'phoneNo': null,
+      'password': null
+    });
   }
-  User? getCurrentUser(){
+
+  User? getCurrentUser() {
     return _auth.currentUser;
+  }
+
+  Future updateUser(UserModel userModel) async {
+    try {
+      if(_auth.currentUser?.email != userModel.email){
+        await _auth.currentUser?.updateDisplayName(userModel.fullName);
+      }
+      await _fireStore
+          .collection('users')
+          .doc(userModel.id)
+          .update({
+        'fullName': userModel.fullName,
+        'email': userModel.email,
+        'phoneNo': userModel.phoneNo,
+        'address': userModel.address,
+        'birthDay': userModel.birthDay,
+        'gender': userModel.gender,
+      });
+      print('User updated successfully!');
+    } catch (e) {
+      print('Error updating user: $e');
+    }
+  }
+  Future<UserModel?> getUserById(String? id) async {
+    final DocumentSnapshot doc = await _fireStore.collection('users').doc(id).get();
+    if (doc.exists) {
+      return UserModel.fromJson(doc.data() as Map<String, dynamic>);
+    } else {
+      throw Exception('User not found!');
+    }
+  }
+  Future updateAvatar(String photoUrl) async {
+    try {
+      if(_auth.currentUser?.photoURL != photoUrl){
+        await _auth.currentUser?.updatePhotoURL(photoUrl);
+      }
+      await _fireStore
+          .collection('users')
+          .doc(_auth.currentUser?.uid)
+          .update({
+        'photoUrl': photoUrl,
+      });
+      print('User updated successfully!');
+    } catch (e) {
+      print('Error updating user: $e');
+    }
   }
 }

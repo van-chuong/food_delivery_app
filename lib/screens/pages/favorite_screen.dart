@@ -34,7 +34,7 @@ class FavoriteScreen extends GetView<FavoriteController> {
               child: CircularProgressIndicator(color: AppColors.primaryColor,),
             );
           }else{
-            if(favoriteController.favoriteProducts.length>0) {
+            if(favoriteController.favoriteProducts.isNotEmpty) {
               return GridView.builder(
                 itemCount: favoriteController.favoriteProducts.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

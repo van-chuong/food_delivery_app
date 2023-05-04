@@ -12,7 +12,7 @@ class AppColors{
   static final grayMain = Color(0xFFECF0F1);
   static final gray = Color(0xFFDBD8DD);
   static final secondGray = Color(0x80000000);
-  static final lightBlack = Color(0x4D34495E);
+  static final lightBlack = Color(0xFF34495E);
   static final blueDarkColor = Color(0xff252B5C);
   static final yellow = Color(0xFFFFC107);
 }

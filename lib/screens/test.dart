@@ -32,13 +32,13 @@ class _TestState extends State<Test> {
           icon: const Icon(Icons.home_outlined),
           selectedIcon:  Icon(Icons.home,color: AppColors.primaryColor),
           label: 'Home',
-          builder: () => const MainScreen(),
+          builder: () =>  MainScreen(),
         ),
         NavigationElement(
           icon: const Icon(Icons.shopping_bag_outlined),
           selectedIcon:  Icon(Icons.shopping_bag,color: AppColors.primaryColor),
           label: 'Order',
-          builder: () => const OrderScreen(),
+          builder: () =>  OrderScreen(),
         ),
         NavigationElement(
           icon: const Icon(Icons.favorite_outline),
@@ -50,7 +50,7 @@ class _TestState extends State<Test> {
           icon: const Icon(Icons.person_outline),
           selectedIcon:  Icon(Icons.person,color: AppColors.primaryColor,),
           label: 'Profile',
-          builder: () => const ProfileScreen(),
+          builder: () =>  ProfileScreen(),
         ),
       ],
     );

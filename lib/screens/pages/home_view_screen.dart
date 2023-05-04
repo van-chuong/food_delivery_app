@@ -9,9 +9,11 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import '../../config/themes/app_colors.dart';
+import '../../controllers/cart_controller.dart';
 import '../../controllers/favorite_controller.dart';
 import '../../controllers/home_view_controller.dart';
 import '../../models/Productmodel.dart';
+import '../cart/cart_screen.dart';
 
 class HomeViewScreen extends GetView<HomeViewController> {
   HomeViewScreen({Key? key}) : super(key: key);
@@ -19,6 +21,7 @@ class HomeViewScreen extends GetView<HomeViewController> {
   final homeViewController = Get.put(HomeViewController());
   final _formKey = GlobalKey<FormBuilderState>();
   final favoriteController = Get.put(FavoriteController());
+  final cartController = Get.put(CartController());
   @override
   Widget build(BuildContext context) {
     var isDesktop = context.width > 1000;
@@ -39,43 +42,109 @@ class HomeViewScreen extends GetView<HomeViewController> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                child: FormBuilder(
-                  key: _formKey,
-                  child: FormBuilderTextField(
-                    controller: _searchKeyController,
-                    focusNode: focusNode,
-                    name: 'searchKey',
-                    decoration: InputDecoration(
-                        labelText: 'Search',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide:
-                              BorderSide(color: Colors.transparent, width: 0),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide:
-                              BorderSide(color: Colors.transparent, width: 0),
-                        ),
-                        prefixIcon: Icon(Icons.search_outlined),
-                        suffixIcon: Obx(
-                          () => GestureDetector(
-                            child: Icon(homeViewController.isVisible.value
-                                ? Icons.close
-                                : null),
-                            onTap: () {
-                              _searchKeyController.text = '';
-                            },
+                child: Row(
+                  children: [
+                    Expanded(
+                        flex:isDesktop?10:6,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: SizedBox(
+                          height: 40,
+                          child: FormBuilder(
+                            key: _formKey,
+                            child: FormBuilderTextField(
+                              controller: _searchKeyController,
+                              focusNode: focusNode,
+                              name: 'searchKey',
+                              decoration: InputDecoration(
+                                  labelText: 'Search',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide(
+                                        color: Colors.transparent, width: 0),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide(
+                                        color: Colors.transparent, width: 0),
+                                  ),
+                                  prefixIcon: Icon(Icons.search_outlined),
+                                  suffixIcon: Obx(
+                                    () => GestureDetector(
+                                      child: Icon(homeViewController.isVisible.value
+                                          ? Icons.close
+                                          : null),
+                                      onTap: () {
+                                        _searchKeyController.text = '';
+                                      },
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: AppColors.grayMain,
+                                  hintText: 'Search',
+                                  hintStyle: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color:
+                                          AppColors.blueDarkColor.withOpacity(0.5))),
+                            ),
                           ),
                         ),
-                        filled: true,
-                        fillColor: AppColors.grayMain,
-                        hintText: 'Search',
-                        hintStyle: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.blueDarkColor.withOpacity(0.5))),
-                  ),
+                      ),
+                    ),
+                    Expanded(
+                      flex:1,
+                      child: SizedBox(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: InkWell(
+                            onTap: () {
+                              // Navigate to shopping cart screen
+                              Get.toNamed(CartScreen.routerName);
+                            },
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: AppColors.primaryColor,
+                                  child: Icon(Icons.shopping_cart_outlined,color: AppColors.white,),
+                                ),
+                                Obx((){
+                                  if (cartController.cartItems.length > 0){
+                                    return Positioned(
+                                      top: -4,
+                                      right: -4,
+                                      child: Container(
+                                          padding: EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          constraints: BoxConstraints(
+                                            minWidth: 16,
+                                            minHeight: 16,
+                                          ),
+                                          child: Obx(()=>Text(
+                                            cartController.cartItems.length.toString(),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),)
+                                      ),
+                                    );
+                                  }else{
+                                    return SizedBox();
+                                  }
+                                })
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
               Padding(
@@ -193,7 +262,7 @@ class HomeViewScreen extends GetView<HomeViewController> {
                               'categoryId':
                                   homeViewController.selectedItem.value,
                               'categoryName':
-                                homeViewController.selectedCategoryName.value,
+                                  homeViewController.selectedCategoryName.value,
                             });
                           },
                           child: Text(
@@ -427,7 +496,38 @@ class HomeViewScreen extends GetView<HomeViewController> {
                                                       Expanded(
                                                           flex: 2,
                                                           child: ElevatedButton(
-                                                            onPressed: () {},
+                                                            onPressed: () async {
+                                                              if(cartController.user?.uid !=null){
+                                                                if(await cartController.addToCart(product)){
+                                                                  showTopSnackBar(
+                                                                    Overlay.of(context),
+                                                                    displayDuration: Duration(milliseconds: 100),
+                                                                    const CustomSnackBar.success(
+                                                                      message:
+                                                                      "The product has been added to cart",
+                                                                    ),
+                                                                  );
+                                                                }else{
+                                                                  showTopSnackBar(
+                                                                    Overlay.of(context),
+                                                                    displayDuration: Duration(milliseconds: 100),
+                                                                    const CustomSnackBar.error(
+                                                                      message:
+                                                                      "An error occurred, please try again later",
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              }else{
+                                                                showTopSnackBar(
+                                                                  Overlay.of(context),
+                                                                  displayDuration: Duration(milliseconds: 100),
+                                                                  const CustomSnackBar.error(
+                                                                    message:
+                                                                    "Please login to perform this action",
+                                                                  ),
+                                                                );
+                                                              }
+                                                            },
                                                             style:
                                                                 ElevatedButton
                                                                     .styleFrom(
@@ -457,59 +557,67 @@ class HomeViewScreen extends GetView<HomeViewController> {
                                       ],
                                     ),
                                     Positioned(
-                                        top: 0, right:0,
-                                        child: Obx(()=>IconButton(
-                                          icon: Icon(
-                                            favoriteController.isFavorite(product.id)?Icons.favorite:Icons.favorite_border,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: (){
-                                            if(FirebaseAuth.instance.currentUser != null){
-                                              if(favoriteController.isFavorite(product.id)) {
-                                                favoriteController.removeFavorite(product.id);
-                                                showTopSnackBar(
-                                                  Overlay.of(context),
-                                                  displayDuration: Duration(milliseconds: 100),
-                                                  CustomSnackBar.error(
-                                                    message:
-                                                    "The product has been removed from your favorites",
-                                                  ),
-                                                );
-                                              }else{
-                                                favoriteController.addFavorite(product.id);
-                                                showTopSnackBar(
+                                        top: 0,
+                                        right: 0,
+                                        child: Obx(() => IconButton(
+                                              icon: Icon(
+                                                favoriteController
+                                                        .isFavorite(product.id)
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () {
+                                                if (FirebaseAuth
+                                                        .instance.currentUser !=
+                                                    null) {
+                                                  if (favoriteController
+                                                      .isFavorite(product.id)) {
+                                                    favoriteController
+                                                        .removeFavorite(
+                                                            product.id);
+                                                    showTopSnackBar(
+                                                      Overlay.of(context),
+                                                      displayDuration: Duration(
+                                                          milliseconds: 100),
+                                                      CustomSnackBar.error(
+                                                        message:
+                                                            "The product has been removed from your favorites",
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    favoriteController
+                                                        .addFavorite(
+                                                            product.id);
+                                                    showTopSnackBar(
+                                                      Overlay.of(context),
+                                                      displayDuration: Duration(
+                                                          milliseconds: 100),
+                                                      CustomSnackBar.success(
+                                                        message:
+                                                            "The product has been added to your favorites",
+                                                      ),
+                                                    );
+                                                  }
+                                                } else {
+                                                  showTopSnackBar(
                                                     Overlay.of(context),
-                                                  displayDuration: Duration(milliseconds: 100),
-                                                  CustomSnackBar.success(
-                                                    message:
-                                                    "The product has been added to your favorites",
-                                                  ),
-                                                );
-                                              }
-                                            }else{
-                                              showTopSnackBar(
-                                                Overlay.of(context),
-                                                displayDuration: Duration(milliseconds: 100),
-                                                CustomSnackBar.error(
-                                                  message:
-                                                  "You need to be logged in to add your favorite products",
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        ))
-                                    )
+                                                    displayDuration: Duration(
+                                                        milliseconds: 100),
+                                                    CustomSnackBar.error(
+                                                      message:
+                                                          "You need to be logged in to add your favorite products",
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            )))
                                   ],
                                 ),
                               );
                             },
                           ),
                   )),
-              ElevatedButton(
-                  onPressed: () {
-                    FirebaseService().signOut();
-                  },
-                  child: Text('SignOut')),
             ],
           ),
         ),
