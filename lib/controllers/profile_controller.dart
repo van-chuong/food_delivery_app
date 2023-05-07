@@ -47,6 +47,7 @@ class ProfileController extends GetxController {
     if (firebaseUser != null) {
       user.value = await loadUser(firebaseUser?.uid);
       selectedGender.value = user.value?.gender;
+      birthDay.value = user.value?.birthDay;
     }
   }
 

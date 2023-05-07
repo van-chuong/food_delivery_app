@@ -137,7 +137,7 @@ class FirebaseService {
       print('Error updating user: $e');
     }
   }
-  Future<UserModel?> getUserById(String? id) async {
+  Future<UserModel> getUserById(String? id) async {
     final DocumentSnapshot doc = await _fireStore.collection('users').doc(id).get();
     if (doc.exists) {
       return UserModel.fromJson(doc.data() as Map<String, dynamic>);

@@ -325,13 +325,18 @@ class MyProfileScreen extends GetView<ProfileController> {
                                         profileController.birthDay.value = value;
                                       },
                                       name: 'birthDay',
-                                      initialValue: profileController.user.value?.birthDay??'',
+                                      initialValue: profileController.birthDay.value,
                                       onTap: () {
                                         DatePicker.showDatePicker(context,
                                             showTitleActions: true,
                                             minTime: DateTime(1900, 1, 1),
                                             maxTime: DateTime.now(),
                                             onConfirm: (date) {
+                                              _formKey.currentState?.fields['birthDay']?.setValue(DateFormat('yyyy/MM/dd').format(date).toString());
+                                              profileController.birthDay.value = DateFormat('yyyy/MM/dd').format(date).toString();
+                                            },
+                                            onChanged:(date){
+                                              _formKey.currentState?.fields['birthDay']?.setValue(DateFormat('yyyy/MM/dd').format(date).toString());
                                               profileController.birthDay.value = DateFormat('yyyy/MM/dd').format(date).toString();
                                             },
                                             currentTime: DateTime.now(),

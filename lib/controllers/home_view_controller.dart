@@ -34,7 +34,7 @@ class HomeViewController extends GetxController{
       if (selectedCategoryName.value == '')defaultInit()
     });
     popularProducts.bindStream(_storeService.getPopularProducts());
-    String id = RandomStringHelper().generateRandomString(20);
+    String id = RandomStringHelper.generateRandomString(20);
     // _storeService.addProduct(ProductModel(
     //   id: id,
     //   name: 'Pizza Seafood',
