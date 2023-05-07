@@ -14,15 +14,25 @@ class CartController extends GetxController {
   final user = FirebaseAuth.instance.currentUser;
   var cartItems = <CartItemModel>[].obs;
   var isLoading = false.obs;
+  var totalPrice = 0.0.obs;
   @override
   void onInit() {
+    print(user?.uid);
     if(user?.uid!=null){
       isLoading.value = true;
       cartItems.bindStream(_storeService.getCartItems(user?.uid));
       ever(cartItems, (_) => {
-      isLoading.value = false
+        isLoading.value = false
       });
+      ever(cartItems, _calculateTotalPrice);
     }
+  }
+  void _calculateTotalPrice(List<CartItemModel> items) {
+    double total = 0.0;
+    for (var item in items) {
+      total += item.price * item.quantity;
+    }
+    totalPrice.value = total;
   }
 
   Future<bool> addToCart(ProductModel productModel) async {
@@ -32,10 +42,43 @@ class CartController extends GetxController {
         name: productModel.name,
         image: productModel.images[0],
         price: productModel.price,
-        quantity: productModel.quantity);
+        quantity: 1,
+        description: productModel.description
+    );
       if(await _storeService.addCartItem(uid!,cartItem)){
         return true;
       }
       return false;
+  }
+  decrementQuantity(String itemId)async{
+    if(user?.uid !=null){
+      final uid = user?.uid;
+      if( await _storeService.decrementQuantity(uid!, itemId)){
+        return true;
+      }else{
+        return false;
+      }
+    }
+
+  }
+  incrementQuantity(String itemId) async {
+    if(user?.uid !=null){
+      final uid = user?.uid;
+      if( await _storeService.incrementQuantity(uid!, itemId)){
+        return true;
+      }else{
+        return false;
+      }
+    }
+  }
+  removeCartItem(String itemId)async{
+    if(user?.uid !=null){
+      final uid = user?.uid;
+      if( await _storeService.removeCartItem(uid!, itemId)){
+        return true;
+      }else{
+        return false;
+      }
+    }
   }
 }

@@ -15,6 +15,8 @@ class AppColors{
   static final lightBlack = Color(0xFF34495E);
   static final blueDarkColor = Color(0xff252B5C);
   static final yellow = Color(0xFFFFC107);
+  static final red = Color(0xFFFF0707);
+  static final green = Color(0xFF4BB543);
 }
 class AppGradient{
   static Gradient dfGradientBg = LinearGradient(

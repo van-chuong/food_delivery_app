@@ -1,6 +1,6 @@
 import 'dart:math';
 class RandomStringHelper{
-  String generateRandomString(int length) {
+  static String generateRandomString(int length) {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
     return String.fromCharCodes(

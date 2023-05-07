@@ -4,14 +4,15 @@ class CartItemModel {
   String image;
   double price;
   int quantity;
+  String description;
 
-  CartItemModel({
-    required this.id,
-    required this.name,
-    required this.image,
-    required this.price,
-    required this.quantity,
-  });
+  CartItemModel(
+      {required this.id,
+      required this.name,
+      required this.image,
+      required this.price,
+      required this.quantity,
+      required this.description});
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
@@ -20,6 +21,7 @@ class CartItemModel {
       image: json['image'],
       price: json['price'],
       quantity: json['quantity'],
+      description: json['description'],
     );
   }
 
@@ -30,6 +32,7 @@ class CartItemModel {
     data['image'] = this.image;
     data['price'] = this.price;
     data['quantity'] = this.quantity;
+    data['description'] = this.description;
     return data;
   }
 }

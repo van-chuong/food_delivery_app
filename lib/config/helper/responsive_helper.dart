@@ -6,7 +6,7 @@ class ResponsiveHelper{
       return mobile;
     }else if (context.isTablet){
       return tablet;
-    }else if (context.isDesktop){
+    }else if (context.width > 1000){
       return desktop;
     }
   }
@@ -15,8 +15,9 @@ class ResponsiveHelper{
       return mobile;
     }else if (context.isTablet){
       return tablet;
-    }else if (context.isDesktop){
+    }else if (context.width > 1000){
       return desktop;
     }
   }
+
 }

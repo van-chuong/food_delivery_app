@@ -1,13 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:food_delivery_app/models/CategoryModel.dart';
+import 'package:food_delivery_app/screens/cart/confirm_order_screen.dart';
 import 'package:food_delivery_app/screens/main_screen.dart';
 import 'package:food_delivery_app/screens/auth/sign_in_screen.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
 import '../../screens/auth/home_screen.dart';
 import '../../screens/auth/sign_up_screen.dart';
 import '../../screens/cart/cart_screen.dart';
+import '../../screens/cart/check_out_status.dart';
 import '../../screens/category/sub_categories_screen.dart';
 import '../../screens/intro_screen.dart';
+import '../../screens/order/order_detail.dart';
 import '../../screens/pages/home_view_screen.dart';
 import '../../screens/profile/change_password_screen.dart';
 import '../../screens/product/products_screen.dart';
@@ -28,6 +31,9 @@ class Routes {
     GetPage(name: MyProfileScreen.routerName, page: () => MyProfileScreen()),
     GetPage(name: ChangePasswordScreen.routerName, page: () => ChangePasswordScreen()),
     GetPage(name: CartScreen.routerName, page: () => CartScreen()),
+    GetPage(name: ConfirmOrderScreen.routerName, page: () => ConfirmOrderScreen()),
+    GetPage(name: CheckOutStatus.routerName, page: () => CheckOutStatus()),
+    GetPage(name: OrderDetail.routerName, page: () => OrderDetail()),
   ];
   static Map<String, WidgetBuilder> routes = {
     SplashScreen.routerName: (context) => SplashScreen(),

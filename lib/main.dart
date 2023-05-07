@@ -20,21 +20,21 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'config/themes/app_colors.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 void main() async {
-  
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await Hive.initFlutter();
-  await LocalStorageHelper.initLocalStorageHelper();
-  if (kIsWeb) {
+  if(kIsWeb){
     await Firebase.initializeApp(
         options: FirebaseOptions(
             apiKey: FirebaseConstants.apiKey,
             appId: FirebaseConstants.appId,
             messagingSenderId: FirebaseConstants.messagingSenderId,
             projectId: FirebaseConstants.projectId));
-  } else {
+  }else{
     await Firebase.initializeApp();
   }
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await Hive.initFlutter();
+  await LocalStorageHelper.initLocalStorageHelper();
+
   String initialRoute;
   bool? ignoreIntroScreen = LocalStorageHelper.getValue('ignoreIntroScreen') as bool?;
   if(await FirebaseService().checkUserIsLogged()){

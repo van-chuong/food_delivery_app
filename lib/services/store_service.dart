@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import '../config/helper/random_string_helper.dart';
 import '../models/CartItemModel.dart';
 import '../models/CategoryModel.dart';
+import '../models/OrderModel.dart';
 import '../models/Productmodel.dart';
 
 class StoreService {
@@ -180,8 +181,9 @@ class StoreService {
             .map((doc) => CartItemModel.fromJson(doc.data()))
             .toList());
   }
+
   Future<bool> addCartItem(String uid, CartItemModel cartItem) async {
-    try{
+    try {
       final cartItemRef = _firestore
           .collection('shopping_cart')
           .doc(uid)
@@ -197,11 +199,99 @@ class StoreService {
         }
       });
       return true;
-    }catch(e){
+    } catch (e) {
       print('Error add product to cart: $e');
       return false;
     }
   }
 
+  Future<bool> decrementQuantity(String uid, String itemId) async {
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('shopping_cart')
+          .doc(uid)
+          .collection('products')
+          .doc(itemId);
 
+      final snapshot = await docRef.get();
+      if (!snapshot.exists) {
+        return false;
+      }
+
+      final currentQuantity = snapshot.get('quantity');
+      if (currentQuantity <= 1) {
+        await docRef.delete();
+        return true;
+      }
+      await docRef.update({'quantity': currentQuantity - 1});
+    } catch (e) {
+      return false;
+    }
+    return false;
+  }
+
+  Future<bool> incrementQuantity(String uid, String itemId) async {
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('shopping_cart')
+          .doc(uid)
+          .collection('products')
+          .doc(itemId);
+
+      final snapshot = await docRef.get();
+      if (!snapshot.exists) {
+        return false;
+      }
+      final currentQuantity = snapshot.get('quantity');
+      await docRef.update({'quantity': currentQuantity + 1});
+    } catch (e) {
+      return false;
+    }
+    return false;
+  }
+
+  Future<bool> removeCartItem(String uid, String itemId) async {
+    try {
+      await _firestore
+          .collection('shopping_cart')
+          .doc(uid)
+          .collection('products')
+          .doc(itemId)
+          .delete();
+      return true; // Trả về true nếu xóa thành công
+    } catch (e) {
+      print('Error removing cart item: $e');
+      return false; // Trả về false nếu xóa thất bại
+    }
+  }
+
+  Future<void> addOrder(OrderModel order, String orderid) async {
+    try {
+      await _firestore.collection('orders').doc(orderid).set(order.toJson());
+      await _firestore
+          .collection('shopping_cart')
+          .doc(order.uid)
+          .collection('products')
+          .get()
+          .then((querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          doc.reference.delete();
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+  Stream<List<OrderModel>> getOrdersByUid(String? uid) {
+    if (uid == null) {
+      return Stream.empty();
+    }
+    return _firestore
+        .collection('orders')
+        .where('uid', isEqualTo: uid)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => OrderModel.fromJson(doc.data()))
+        .toList());
+  }
 }

@@ -1,10 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
     package="work.vanchuong.food_delivery_app">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA" />
    <application
+           tools:replace="android:label"
         android:label="food_delivery_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
@@ -34,5 +36,15 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+<!--       <activity android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"-->
+<!--                 android:launchMode="singleTask"-->
+<!--                 android:exported="true">-->
+<!--           <intent-filter>-->
+<!--               <action android:name="android.intent.action.VIEW" ></action>-->
+<!--               <category android:name="android.intent.category.DEFAULT" ></category>-->
+<!--               <category android:name="android.intent.category.BROWSABLE" ></category>-->
+<!--               <data android:scheme="${applicationId}.braintree" ></data>-->
+<!--           </intent-filter>-->
+<!--       </activity>-->
     </application>
 </manifest>
