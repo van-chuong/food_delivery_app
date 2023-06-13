@@ -7,32 +7,40 @@ import '../themes/app_text_styles.dart';
 class ColorHelper {
   static paymentColor(String payment) {
     if (payment == 'Paypal') {
-      return Text('Paypal', style: AppTextStyles.h2.copyWith(
+      return Text(payment, style: AppTextStyles.h2.copyWith(
         color: AppColors.blueMain,
       ),);
     } else if (payment == 'Cash') {
-      return Text('Cash', style: AppTextStyles.h2.copyWith(
+      return Text(payment, style: AppTextStyles.h2.copyWith(
         color: AppColors.primaryColor,
+      ),);
+    }else{
+      return Text(payment, style: AppTextStyles.h2.copyWith(
+        color: AppColors.yellow,
       ),);
     }
   }
 
   static statusColor(String status) {
     if (status == 'Canceled') {
-      return Text('Canceled', style: AppTextStyles.nomal.copyWith(
+      return Text(status, style: AppTextStyles.nomal.copyWith(
         color: AppColors.red,
       ));
     } else if (status == 'Pending') {
-      return Text('Pending', style: AppTextStyles.nomal.copyWith(
+      return Text(status, style: AppTextStyles.nomal.copyWith(
         color: AppColors.yellow,
       ));
     } else if (status == 'Paid') {
-      return Text('Paid', style: AppTextStyles.nomal.copyWith(
+      return Text(status, style: AppTextStyles.nomal.copyWith(
         color: AppColors.blueMain,
       ));
     } else if (status == 'Completed') {
-      return Text('Completed', style: AppTextStyles.nomal.copyWith(
+      return Text(status, style: AppTextStyles.nomal.copyWith(
         color: AppColors.green,
+      ));
+    }else{
+      return Text(status, style: AppTextStyles.nomal.copyWith(
+        color: AppColors.yellow,
       ));
     }
   }

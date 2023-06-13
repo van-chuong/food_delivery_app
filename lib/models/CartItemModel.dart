@@ -19,7 +19,7 @@ class CartItemModel {
       id: json['id'],
       name: json['name'],
       image: json['image'],
-      price: json['price'],
+      price: json['price'] is int ? (json['price'] as int).toDouble() : json['price'],
       quantity: json['quantity'],
       description: json['description'],
     );

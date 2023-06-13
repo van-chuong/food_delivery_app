@@ -50,6 +50,21 @@ class CartController extends GetxController {
       }
       return false;
   }
+  Future<bool> addToCartWithQuantity(ProductModel productModel,quantity) async {
+    final uid = user?.uid;
+    final cartItem = CartItemModel(
+        id: productModel.id,
+        name: productModel.name,
+        image: productModel.images[0],
+        price: productModel.price,
+        quantity: quantity,
+        description: productModel.description
+    );
+    if(await _storeService.addCartItem(uid!,cartItem)){
+      return true;
+    }
+    return false;
+  }
   decrementQuantity(String itemId)async{
     if(user?.uid !=null){
       final uid = user?.uid;

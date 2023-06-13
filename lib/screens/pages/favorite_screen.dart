@@ -103,6 +103,7 @@ class FavoriteScreen extends GetView<FavoriteController> {
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                             ),
+                                            maxLines: 1,
                                           ),
                                           SizedBox(
                                             height: 5,

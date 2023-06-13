@@ -8,22 +8,27 @@ import 'package:get/get.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:searchfield/searchfield.dart';
+
 import '../../config/themes/app_colors.dart';
 import '../../controllers/cart_controller.dart';
 import '../../controllers/favorite_controller.dart';
 import '../../controllers/home_view_controller.dart';
 import '../../models/Productmodel.dart';
 import '../cart/cart_screen.dart';
+import '../product/product_detail.dart';
 
 class HomeViewScreen extends GetView<HomeViewController> {
   HomeViewScreen({Key? key}) : super(key: key);
   static String routerName = '/home_view_screen';
   final homeViewController = Get.put(HomeViewController());
-  final _formKey = GlobalKey<FormBuilderState>();
   final favoriteController = Get.put(FavoriteController());
   final cartController = Get.put(CartController());
+
   @override
   Widget build(BuildContext context) {
+    final focus = FocusNode();
     var isDesktop = context.width > 1000;
     final focusNode = FocusNode();
     var _searchKeyController = TextEditingController();
@@ -45,19 +50,13 @@ class HomeViewScreen extends GetView<HomeViewController> {
                 child: Row(
                   children: [
                     Expanded(
-                        flex:isDesktop?10:6,
+                      flex: isDesktop ? 10 : 6,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 10),
                         child: SizedBox(
-                          height: 40,
-                          child: FormBuilder(
-                            key: _formKey,
-                            child: FormBuilderTextField(
-                              controller: _searchKeyController,
-                              focusNode: focusNode,
-                              name: 'searchKey',
-                              decoration: InputDecoration(
-                                  labelText: 'Search',
+                            height: 40,
+                            child: SearchField(
+                              searchInputDecoration: InputDecoration(
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(24),
                                     borderSide: BorderSide(
@@ -69,31 +68,43 @@ class HomeViewScreen extends GetView<HomeViewController> {
                                         color: Colors.transparent, width: 0),
                                   ),
                                   prefixIcon: Icon(Icons.search_outlined),
-                                  suffixIcon: Obx(
-                                    () => GestureDetector(
-                                      child: Icon(homeViewController.isVisible.value
-                                          ? Icons.close
-                                          : null),
-                                      onTap: () {
-                                        _searchKeyController.text = '';
-                                      },
-                                    ),
-                                  ),
                                   filled: true,
                                   fillColor: AppColors.grayMain,
                                   hintText: 'Search',
                                   hintStyle: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
-                                      color:
-                                          AppColors.blueDarkColor.withOpacity(0.5))),
-                            ),
-                          ),
-                        ),
+                                      color: AppColors.blueDarkColor
+                                          .withOpacity(0.5))),
+                              suggestionsDecoration: SuggestionDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  color: AppColors.white),
+                              maxSuggestionsInViewPort: 3,
+                              suggestions: homeViewController.allProducts.value
+                                  .map(
+                                    (e) => SearchFieldListItem<ProductModel>(
+                                        e.name,
+                                        item: e,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 20.0),
+                                          child: Text(e.name),
+                                        )),
+                                  )
+                                  .toList(),
+                              focusNode: focus,
+                              suggestionState: Suggestion.expand,
+                              onSuggestionTap:
+                                  (SearchFieldListItem<ProductModel> x) {
+                                focus.unfocus();
+                                Get.toNamed(ProductDetail.routerName,
+                                    arguments: {'productId': x.item?.id});
+                              },
+                            )),
                       ),
                     ),
                     Expanded(
-                      flex:1,
+                      flex: 1,
                       child: SizedBox(
                         child: Align(
                           alignment: Alignment.centerRight,
@@ -107,10 +118,13 @@ class HomeViewScreen extends GetView<HomeViewController> {
                               children: [
                                 CircleAvatar(
                                   backgroundColor: AppColors.primaryColor,
-                                  child: Icon(Icons.shopping_cart_outlined,color: AppColors.white,),
+                                  child: Icon(
+                                    Icons.shopping_cart_outlined,
+                                    color: AppColors.white,
+                                  ),
                                 ),
-                                Obx((){
-                                  if (cartController.cartItems.length > 0){
+                                Obx(() {
+                                  if (cartController.cartItems.length > 0) {
                                     return Positioned(
                                       top: -4,
                                       right: -4,
@@ -124,17 +138,19 @@ class HomeViewScreen extends GetView<HomeViewController> {
                                             minWidth: 16,
                                             minHeight: 16,
                                           ),
-                                          child: Obx(()=>Text(
-                                            cartController.cartItems.length.toString(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
+                                          child: Obx(
+                                            () => Text(
+                                              cartController.cartItems.length
+                                                  .toString(),
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                              ),
+                                              textAlign: TextAlign.center,
                                             ),
-                                            textAlign: TextAlign.center,
-                                          ),)
-                                      ),
+                                          )),
                                     );
-                                  }else{
+                                  } else {
                                     return SizedBox();
                                   }
                                 })
@@ -167,6 +183,55 @@ class HomeViewScreen extends GetView<HomeViewController> {
                       )
                     ]),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(30, 20, 30, 0),
+                child: Container(
+                  width: context.width - 60,
+                  height: isDesktop ? 300 : 100,
+                  decoration:
+                      BoxDecoration(borderRadius: BorderRadius.circular(24)),
+                  child: Obx((){
+                    if(homeViewController.isLoading.value){
+                      return Center(child: CircularProgressIndicator(color: AppColors.primaryColor,),);
+                    }else{
+                      return CarouselSlider(
+                          items: homeViewController.banners.value
+                              .map((item) => Container(
+                            child: Center(
+                              child: ClipRRect(
+                                // Sử dụng ClipRRect để cắt bớt phần tràn ra
+                                borderRadius: BorderRadius.circular(24),
+                                child: Image.network(
+                                  item.photoUrl,
+                                  fit: BoxFit.cover,
+                                  width: context.width - 60,
+                                ),
+                              ),
+                            ),
+                          ))
+                              .toList(),
+                          options: CarouselOptions(
+                              autoPlay: true,
+                              aspectRatio: 2,
+                              enlargeCenterPage: true));
+                    }
+                  })
+                ),
+              ),
+              Padding(
+                  padding: const EdgeInsets.fromLTRB(30.0, 30, 30, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Food Category',
+                          style: AppTextStyles.h1.copyWith(color: Colors.black),
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    ],
+                  )),
               Padding(
                 padding: const EdgeInsets.fromLTRB(30.0, 30, 0, 0),
                 child: SizedBox(
@@ -238,7 +303,7 @@ class HomeViewScreen extends GetView<HomeViewController> {
                         }))),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(30.0, 30, 30, 0),
+                padding: const EdgeInsets.fromLTRB(20.0, 30, 30, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -377,7 +442,7 @@ class HomeViewScreen extends GetView<HomeViewController> {
                     ],
                   )),
               Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 20, 30, 0),
+                  padding: const EdgeInsets.fromLTRB(30, 20, 30, 30),
                   child: Obx(
                     () => homeViewController.popularProducts.length == 0
                         ? Center(
@@ -403,158 +468,180 @@ class HomeViewScreen extends GetView<HomeViewController> {
                                     borderRadius: BorderRadius.circular(24)),
                                 child: Stack(
                                   children: <Widget>[
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                            flex: 2,
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(24),
-                                              child: Image.network(
-                                                product.images[0],
-                                                fit: BoxFit.cover,
-                                                height: double.infinity,
-                                              ),
-                                            )),
-                                        Expanded(
-                                            flex: 3,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                      10, 10, 10, 10),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    product.name,
-                                                    style: AppTextStyles.h2
-                                                        .copyWith(
-                                                            fontSize: 14,
-                                                            color:
-                                                                Colors.black),
-                                                    maxLines: 1,
-                                                  ),
-                                                  SizedBox(
-                                                      height: isDesktop
-                                                          ? context.height *
-                                                              0.005
-                                                          : 0),
-                                                  Text(
-                                                      product.description
-                                                          .toString(),
-                                                      maxLines: 2,
-                                                      style: AppTextStyles.nomal
+                                    InkWell(
+                                      onTap: (){
+                                        Get.toNamed(ProductDetail.routerName, arguments: {'productId': product.id});
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                              flex: 2,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                                child: Image.network(
+                                                  product.images[0],
+                                                  fit: BoxFit.cover,
+                                                  height: double.infinity,
+                                                ),
+                                              )),
+                                          Expanded(
+                                              flex: 3,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        10, 10, 10, 10),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      product.name,
+                                                      style: AppTextStyles.h2
                                                           .copyWith(
-                                                              fontSize: 12,
-                                                              color: Colors
-                                                                  .black)),
-                                                  SizedBox(
-                                                    height: isDesktop
-                                                        ? context.height * 0.003
-                                                        : 0,
-                                                  ),
-                                                  RatingBarIndicator(
-                                                    rating: product.rating,
-                                                    itemBuilder:
-                                                        (context, index) =>
-                                                            Icon(
-                                                      Icons.star,
-                                                      color: AppColors
-                                                          .primaryColor,
+                                                              fontSize: 14,
+                                                              color:
+                                                                  Colors.black),
+                                                      maxLines: 1,
                                                     ),
-                                                    itemCount: 5,
-                                                    itemSize: 14.0,
-                                                    direction: Axis.horizontal,
-                                                  ),
-                                                  SizedBox(
+                                                    SizedBox(
+                                                        height: isDesktop
+                                                            ? context.height *
+                                                                0.005
+                                                            : 0),
+                                                    Text(
+                                                        product.description
+                                                            .toString(),
+                                                        maxLines: 2,
+                                                        style: AppTextStyles.nomal
+                                                            .copyWith(
+                                                                fontSize: 12,
+                                                                color: Colors
+                                                                    .black)),
+                                                    SizedBox(
                                                       height: isDesktop
-                                                          ? context.height *
-                                                              0.003
-                                                          : context.height *
-                                                              0.002),
-                                                  Row(
-                                                    children: [
-                                                      Expanded(
-                                                        flex: 1,
-                                                        child: Text(
-                                                            "\$" +
-                                                                product.price
-                                                                    .toDouble()
-                                                                    .toString(),
-                                                            maxLines: 2,
-                                                            style: AppTextStyles
-                                                                .h2
-                                                                .copyWith(
-                                                                    fontSize:
-                                                                        16,
-                                                                    color: Colors
-                                                                        .red)),
+                                                          ? context.height * 0.003
+                                                          : 0,
+                                                    ),
+                                                    RatingBarIndicator(
+                                                      rating: product.rating,
+                                                      itemBuilder:
+                                                          (context, index) =>
+                                                              Icon(
+                                                        Icons.star,
+                                                        color: AppColors
+                                                            .primaryColor,
                                                       ),
-                                                      Expanded(
-                                                          flex: 2,
-                                                          child: ElevatedButton(
-                                                            onPressed: () async {
-                                                              if(cartController.user?.uid !=null){
-                                                                if(await cartController.addToCart(product)){
+                                                      itemCount: 5,
+                                                      itemSize: 14.0,
+                                                      direction: Axis.horizontal,
+                                                    ),
+                                                    SizedBox(
+                                                        height: isDesktop
+                                                            ? context.height *
+                                                                0.003
+                                                            : context.height *
+                                                                0.002),
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          flex: 1,
+                                                          child: Text(
+                                                              "\$" +
+                                                                  product.price
+                                                                      .toDouble()
+                                                                      .toString(),
+                                                              maxLines: 2,
+                                                              style: AppTextStyles
+                                                                  .h2
+                                                                  .copyWith(
+                                                                      fontSize:
+                                                                          16,
+                                                                      color: Colors
+                                                                          .red)),
+                                                        ),
+                                                        Expanded(
+                                                            flex: 2,
+                                                            child: ElevatedButton(
+                                                              onPressed: () async {
+                                                                if (cartController.user?.uid != null) {
+                                                                  if (await cartController
+                                                                      .addToCart(
+                                                                          product)) {
+                                                                    showTopSnackBar(
+                                                                      Overlay.of(
+                                                                          context),
+                                                                      displayDuration:
+                                                                          Duration(
+                                                                              milliseconds:
+                                                                                  100),
+                                                                      const CustomSnackBar
+                                                                          .success(
+                                                                        message:
+                                                                            "The product has been added to cart",
+                                                                      ),
+                                                                    );
+                                                                  } else {
+                                                                    showTopSnackBar(
+                                                                      Overlay.of(
+                                                                          context),
+                                                                      displayDuration:
+                                                                          Duration(
+                                                                              milliseconds:
+                                                                                  100),
+                                                                      const CustomSnackBar
+                                                                          .error(
+                                                                        message:
+                                                                            "An error occurred, please try again later",
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                } else {
                                                                   showTopSnackBar(
-                                                                    Overlay.of(context),
-                                                                    displayDuration: Duration(milliseconds: 100),
-                                                                    const CustomSnackBar.success(
+                                                                    Overlay.of(
+                                                                        context),
+                                                                    displayDuration:
+                                                                        Duration(
+                                                                            milliseconds:
+                                                                                100),
+                                                                    const CustomSnackBar
+                                                                        .error(
                                                                       message:
-                                                                      "The product has been added to cart",
-                                                                    ),
-                                                                  );
-                                                                }else{
-                                                                  showTopSnackBar(
-                                                                    Overlay.of(context),
-                                                                    displayDuration: Duration(milliseconds: 100),
-                                                                    const CustomSnackBar.error(
-                                                                      message:
-                                                                      "An error occurred, please try again later",
+                                                                          "Please login to perform this action",
                                                                     ),
                                                                   );
                                                                 }
-                                                              }else{
-                                                                showTopSnackBar(
-                                                                  Overlay.of(context),
-                                                                  displayDuration: Duration(milliseconds: 100),
-                                                                  const CustomSnackBar.error(
-                                                                    message:
-                                                                    "Please login to perform this action",
-                                                                  ),
-                                                                );
-                                                              }
-                                                            },
-                                                            style:
-                                                                ElevatedButton
-                                                                    .styleFrom(
-                                                              backgroundColor:
-                                                                  AppColors
-                                                                      .primaryColor,
-                                                              shape:
-                                                                  RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            24),
+                                                              },
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    AppColors
+                                                                        .primaryColor,
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              24),
+                                                                ),
                                                               ),
-                                                            ),
-                                                            child: Text(
-                                                              'Add to cart',
-                                                              style: TextStyle(
-                                                                  color: AppColors
-                                                                      .white),
-                                                            ),
-                                                          ))
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
-                                            ))
-                                      ],
+                                                              child: Text(
+                                                                'Add to cart',
+                                                                style: TextStyle(
+                                                                    color: AppColors
+                                                                        .white),
+                                                              ),
+                                                            ))
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              ))
+                                        ],
+                                      ),
                                     ),
                                     Positioned(
                                         top: 0,

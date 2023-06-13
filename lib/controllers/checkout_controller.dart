@@ -29,7 +29,7 @@ class CheckoutController extends GetxController {
   Rx<String> phoneNo = ''.obs;
   Rx<String> address = ''.obs;
   RxBool paypalStatus = false.obs;
-  final orderDay = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  final orderDay = DateFormat('yyyy/MM/dd').format(DateTime.now());
   Timer? timer;
   void setPaymentMethod(String value) {
     paymentMethod.value = value;
@@ -49,7 +49,6 @@ class CheckoutController extends GetxController {
     return await _firebaseService.getUserById(uid);
   }
   payment(String total, List<CartItemModel> items) async {
-
     switch (paymentMethod.value) {
       case 'Paypal':
         {
@@ -103,7 +102,9 @@ class CheckoutController extends GetxController {
                                 payment: paymentMethod.value,
                                 status: 'Paid',
                                 total: total,
-                                orderDay: orderDay), orderid);
+                                orderDay: orderDay,
+                                cancelRequest: false
+                            ), orderid);
                       } catch (e) {
                       }
                       paypalStatus.value = true;
@@ -131,8 +132,7 @@ class CheckoutController extends GetxController {
           DialogHelper.showLoading('Processing');
           final orderid = RandomStringHelper.generateRandomString(20);
           try {
-            addOrder(
-                OrderModel(
+            addOrder(OrderModel(
                     items: cartItems,
                     orderid: orderid,
                     uid: user!.uid,
@@ -142,7 +142,8 @@ class CheckoutController extends GetxController {
                     payment: paymentMethod.value,
                     status: 'Pending',
                     total: total,
-                    orderDay: orderDay),
+                    orderDay: orderDay,
+                    cancelRequest: false),
                 orderid);
             await  Future.delayed(Duration(seconds: 2));
             DialogHelper.hideLoading();

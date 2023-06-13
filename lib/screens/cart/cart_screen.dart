@@ -299,10 +299,8 @@ class CartScreen extends GetView<CartController> {
                                                                         cartItem
                                                                             .id)) {
                                                                       showTopSnackBar(
-                                                                        Overlay.of(
-                                                                            context),
-                                                                        displayDuration:
-                                                                        Duration(
+                                                                        Overlay.of(context),
+                                                                        displayDuration: Duration(
                                                                             milliseconds:
                                                                             100),
                                                                         const CustomSnackBar

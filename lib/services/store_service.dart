@@ -4,15 +4,34 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-
+import 'package:intl/intl.dart';
 import '../config/helper/random_string_helper.dart';
+import '../models/BannerModel.dart';
 import '../models/CartItemModel.dart';
 import '../models/CategoryModel.dart';
 import '../models/OrderModel.dart';
 import '../models/Productmodel.dart';
+import '../models/StatisticalModel.dart';
+import '../models/UserModel.dart';
 
 class StoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Stream<List<UserModel>> getUsers() {
+    return _firestore.collection('users').snapshots().map((snapshot) =>
+        snapshot.docs
+            .map((doc) =>
+            UserModel.fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  Stream<List<BannerModel>> getBannersStream() {
+    return _firestore.collection('banners').snapshots().map(
+          (snapshot) => snapshot.docs
+          .map((doc) => BannerModel.fromJson(doc.data() as Map<String, dynamic>),)
+          .toList(),
+    );
+  }
 
   Stream<List<CategoryModel>> getCategories() {
     return _firestore.collection('categories').snapshots().map((snapshot) =>
@@ -43,6 +62,56 @@ class StoreService {
             .toList());
   }
 
+  Future<void> updateOrderStatus(String orderId, String status,OrderModel order) async {
+    try {
+      if(order.cancelRequest == true && status=="Canceled"){
+        await _firestore.collection('orders').doc(orderId).update({
+          'status': "Canceled",
+          'cancelRequest': false
+        });
+      }else if(status =="Completed"){
+        var totalQuantity = order.items.fold(0, (sum, item) => sum + item.quantity);
+        var profit = double.parse(order.total)*10/100;
+        addOrUpdateStatisticalModel(totalQuantity,profit,double.parse(order.total));
+        await _firestore.collection('orders').doc(orderId).update({
+          'status': status,
+          'cancelRequest': false
+        });
+      }else{
+        await _firestore.collection('orders').doc(orderId).update({
+          'status': status,
+        });
+      }
+      print('Order status updated successfully!');
+    } catch (error) {
+      print('Error updating order status: $error');
+    }
+  }
+  Future<void> addOrUpdateStatisticalModel(int ordersTotal,double profit,double sales) async {
+    final dayNow = DateFormat('yyyy/MM/dd').format(DateTime.now());
+    final querySnapshot = await _firestore
+        .collection('statistical')
+        .where('day', isEqualTo: dayNow)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.size > 0) {
+      final docId = querySnapshot.docs[0].id;
+      await _firestore
+          .collection('statistical')
+          .doc(docId)
+          .update({
+        'ordersTotal': FieldValue.increment(ordersTotal),
+        'profit': FieldValue.increment(profit),
+        'sales': FieldValue.increment(sales),
+      });
+    } else {
+      final id = RandomStringHelper.generateRandomString(20);
+      final StatisticalModel statisticalModel = StatisticalModel(id: id, day: dayNow, ordersTotal: ordersTotal, profit: profit, sales: sales);
+      await _firestore.collection('statistical').doc(id).set(statisticalModel.toJson());
+    }
+  }
+
   Future<List<CategoryModel>> getAllSubCategories(String categoryId) async {
     final subCategories = <CategoryModel>[];
     try {
@@ -65,24 +134,39 @@ class StoreService {
   }
 
   Future<void> addProduct(ProductModel product) async {
-    DocumentReference products =
-        FirebaseFirestore.instance.collection('products').doc(product.id);
-    return products
-        .set({
-          'id': product.id,
-          'name': product.name,
-          'description': product.description,
-          'price': product.price,
-          'categoryId': product.categoryId,
-          'subCategoryId': product.subCategoryId,
-          'created_at': product.created_at,
-          'quantity': product.quantity,
-          'rating': product.rating,
-          'sales': product.sales,
-          'images': product.images
-        })
-        .then((value) => print('Product added'))
-        .catchError((error) => print('Failed to add product: $error'));
+    try {
+      await _firestore.collection('products').doc(product.id).set(product.toJson());
+      print('Product added successfully!');
+    } catch (error) {
+      print('Error adding product: $error');
+    }
+  }
+  Future<void> updateProduct(ProductModel product) async {
+    try {
+      final productRef = _firestore.collection('products').doc(product.id);
+      await productRef.update(product.toJson());
+      print('Product updated successfully!');
+    } catch (error) {
+      print('Error updating product: $error');
+    }
+  }
+
+  Future<void> removeProduct(String id) async {
+    try {
+      await _firestore.collection('products').doc(id).delete();
+      print('Product removed successfully!');
+    } catch (error) {
+      print('Error removing product: $error');
+    }
+  }
+
+  Future<void> removeOrder(String id) async {
+    try {
+      await _firestore.collection('orders').doc(id).delete();
+      print('Order removed successfully!');
+    } catch (error) {
+      print('Error removing Order: $error');
+    }
   }
 
   Future<List<ProductModel>> getAllProducts() async {
@@ -100,6 +184,46 @@ class StoreService {
       print('Error getting products for category: $e');
     }
     return products;
+  }
+
+  Stream<List<ProductModel>> getProducts() {
+    return _firestore.collection('products').snapshots().map(
+            (snapshot) => snapshot.docs
+            .map((doc) =>
+            ProductModel.fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  Stream<List<OrderModel>> getOrders() {
+    return _firestore.collection('orders').snapshots().map(
+            (snapshot) => snapshot.docs
+            .map((doc) =>
+                OrderModel.fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  Stream<List<OrderModel>> getOrdersByStatus(String status) {
+    return _firestore.collection('orders').where('status', isEqualTo: status).snapshots().map(
+            (snapshot) => snapshot.docs
+            .map((doc) => OrderModel.fromJson(doc.data() as Map<String, dynamic>))
+            .toList()
+    );
+  }
+
+  Stream<List<OrderModel>> getOrdersRequest() {
+    return _firestore.collection('orders').where('cancelRequest', isEqualTo: true).snapshots().map(
+            (snapshot) => snapshot.docs
+            .map((doc) => OrderModel.fromJson(doc.data() as Map<String, dynamic>))
+            .toList()
+    );
+  }
+
+  Stream<List<ProductModel>> getOutOfStocksProducts() {
+    return _firestore.collection('products').where('quantity',isEqualTo: 0).snapshots().map(
+            (snapshot) => snapshot.docs
+            .map((doc) =>
+            ProductModel.fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
   }
 
   Future<List<ProductModel>> getProductsForCategory(String? categoryId) async {
@@ -167,7 +291,22 @@ class StoreService {
       throw Exception("Error getting product by id: $e");
     }
   }
-
+  Future<CategoryModel> getCategoryById(String categoryId) async {
+    try {
+      DocumentSnapshot productDoc = await _firestore
+          .collection('categories')
+          .doc(categoryId)
+          .get();
+      if (productDoc.exists) {
+        return CategoryModel.fromJson(
+            productDoc.data()! as Map<String, dynamic>);
+      } else {
+        throw Exception("Category not found!");
+      }
+    } catch (e) {
+      throw Exception("Error getting category by id: $e");
+    }
+  }
   Stream<List<CartItemModel>> getCartItems(String? uid) {
     if (uid == null) {
       return Stream.empty();
@@ -192,7 +331,7 @@ class StoreService {
       final cartItemData = cartItem.toJson();
       await cartItemRef.get().then((docSnapshot) async {
         if (docSnapshot.exists) {
-          cartItemData['quantity'] = (docSnapshot.data()!['quantity'] ?? 0) + 1;
+          cartItemData['quantity'] = (docSnapshot.data()!['quantity'] ?? 0) + cartItem.quantity;
           await cartItemRef.update(cartItemData);
         } else {
           await cartItemRef.set(cartItemData);
@@ -268,20 +407,32 @@ class StoreService {
   Future<void> addOrder(OrderModel order, String orderid) async {
     try {
       await _firestore.collection('orders').doc(orderid).set(order.toJson());
-      await _firestore
+      // Lấy danh sách sản phẩm trong giỏ hàng
+      final snapshot = await _firestore
           .collection('shopping_cart')
           .doc(order.uid)
           .collection('products')
-          .get()
-          .then((querySnapshot) {
-        querySnapshot.docs.forEach((doc) {
-          doc.reference.delete();
+          .get();
+      // Duyệt qua từng sản phẩm và cập nhật quantity và sales
+      for (final doc in snapshot.docs) {
+        final productId = doc.id;
+        await _firestore
+            .collection('products')
+            .doc(productId)
+            .update({
+          'quantity': FieldValue.increment(-1),
+          'sales': FieldValue.increment(1),
         });
+      }
+      // Xóa danh sách sản phẩm trong giỏ hàng
+      snapshot.docs.forEach((doc) {
+        doc.reference.delete();
       });
     } catch (e) {
       print(e);
     }
   }
+
   Stream<List<OrderModel>> getOrdersByUid(String? uid) {
     if (uid == null) {
       return Stream.empty();
@@ -291,7 +442,76 @@ class StoreService {
         .where('uid', isEqualTo: uid)
         .snapshots()
         .map((snapshot) => snapshot.docs
-        .map((doc) => OrderModel.fromJson(doc.data()))
-        .toList());
+            .map((doc) => OrderModel.fromJson(doc.data()))
+            .toList());
   }
+
+  Future<OrderModel> getOrderById(String orderId) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> orderDoc =
+          await _firestore.collection('orders').doc(orderId).get();
+      OrderModel order = OrderModel.fromJson(orderDoc.data()!);
+      return order;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateOrderCancelRequest(String orderId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .update({'status': 'Request Cancel', 'cancelRequest': true});
+    } catch (e) {
+      print('Error updating order: $e');
+    }
+  }
+
+  Stream<List<StatisticalModel>> getStatistical() {
+    return _firestore
+        .collection('statistical')
+        .limit(7)
+        .orderBy('day',descending: true)
+        .snapshots()
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => StatisticalModel.fromJson(doc.data())).toList());
+  }
+  Future<int> countProducts() async {
+    int count = 0;
+    await FirebaseFirestore.instance
+        .collection('products')
+        .get()
+        .then((QuerySnapshot snapshot) {
+      count = snapshot.size;
+    });
+    return count;
+  }
+
+
+  Future<int> countCategories() async {
+    int count = 0;
+    await FirebaseFirestore.instance
+        .collection('categories')
+        .get()
+        .then((QuerySnapshot snapshot) {
+      count = snapshot.size;
+    });
+    return count;
+  }
+  Future<int> getTotalUsersInDay(String day) async {
+    int count = 0;
+    try{
+      await _firestore
+          .collection('users')
+          .get().then((QuerySnapshot snapshot) {
+        count = snapshot.size;
+      });
+    }catch(e){
+      rethrow;
+    }
+    return count;
+  }
+
+
 }

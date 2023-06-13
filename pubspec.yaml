@@ -73,9 +73,13 @@ dependencies:
   flutter_native_splash: ^2.2.19
   flutter_adaptive_navigation: ^0.0.4
   # Braintree
-#  flutter_braintree: ^3.0.0
   flutter_paypal: ^0.0.8
-
+  # Chart
+  fl_chart: ^0.62.0
+  # Carousel_slider
+  carousel_slider: ^4.2.1
+  #searchfield
+  searchfield: ^0.8.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -27,10 +27,10 @@ class ProfileScreen extends GetView<ProfileController> {
                   Padding(
                     padding: const EdgeInsets.only(top: 30.0),
                     child: Center(
-                      child: CircleAvatar(
-                          radius: 50,
-                          backgroundImage: NetworkImage(profileController.firebaseUser?.photoURL??ImageHelper.imgAvatarNet)
-                      )
+                        child: Obx(()=>CircleAvatar(
+                            radius: 50,
+                            backgroundImage: NetworkImage(profileController.photoUrl.value ?? ImageHelper.imgAvatarNet)
+                        ))
                     ),
                   ),
                   Padding(

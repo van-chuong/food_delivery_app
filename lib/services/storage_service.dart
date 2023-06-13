@@ -16,7 +16,7 @@ class StorageService{
       final Reference storageRef = storage.ref().child('avatars/${DateTime.now().millisecondsSinceEpoch}.png');
       final TaskSnapshot uploadTask = await storageRef.putFile(file!);
       downloadUrl = await uploadTask.ref.getDownloadURL();
-
+      _firebaseService.updateAvatar(downloadUrl);
     }else{
       final Reference storageRef = storage.ref().child('avatars/${DateTime.now().millisecondsSinceEpoch}.png');
       final uploadTask = await storageRef.putData(data!);

@@ -1,6 +1,7 @@
 
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/UserModel.dart';
@@ -25,30 +26,40 @@ class ProfileController extends GetxController {
   Rx<String?> reNewPassword = Rx<String?>(null);
   final FirebaseService _firebaseService = FirebaseService();
   final StorageService _storageService = StorageService();
+  final storage = FirebaseStorage.instanceFor(bucket: 'gs://flutter-food-1a10d.appspot.com/');
   Rx<UserModel?> user = Rx<UserModel?>(null);
   final imagePicker = ImagePicker();
+  var isLoading = true.obs;
+  Rx<String?> photoUrl = Rx<String?>(null);
   Future pickGalleryImage(BuildContext context) async{
       if(!kIsWeb){
         final pickedFile = await imagePicker.pickImage(source: ImageSource.gallery);
         if(pickedFile !=null){
-          _storageService.uploadImageToFirebaseStorage(File(pickedFile.path),null);
+          String downloadUrl;
+          Reference referenceRoot = FirebaseStorage.instance.ref();
+          Reference referenceDir = referenceRoot.child('avatars');
+          Reference referenceToUpload =referenceDir.child('${DateTime.now().millisecondsSinceEpoch}.png');
+          try{
+            await referenceToUpload.putFile(File(pickedFile.path));
+            downloadUrl = await referenceToUpload.getDownloadURL();
+            _firebaseService.updateAvatar(downloadUrl);
+            photoUrl.value = downloadUrl;
+          }catch(e){
+          }
         }else{
-        }
-      }else if(kIsWeb){
-        final pickedFile = await imagePicker.pickImage(source: ImageSource.gallery);
-        if(pickedFile !=null) {
-          final imgByte = await pickedFile.readAsBytes();
-          _storageService.uploadImageToFirebaseStorage(null,imgByte);
         }
       }
   }
   @override
   void onInit() async {
     if (firebaseUser != null) {
+      isLoading(true);
       user.value = await loadUser(firebaseUser?.uid);
       selectedGender.value = user.value?.gender;
       birthDay.value = user.value?.birthDay;
+      photoUrl.value = user.value?.photoUrl;
     }
+    isLoading(false);
   }
 
   loadUser(String? uid) async {

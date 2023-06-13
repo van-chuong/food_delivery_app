@@ -3,6 +3,7 @@ import 'package:food_delivery_app/services/firebase_service.dart';
 import 'package:get/get.dart';
 
 import '../config/helper/random_string_helper.dart';
+import '../models/BannerModel.dart';
 import '../models/CategoryModel.dart';
 import '../models/Productmodel.dart';
 import '../services/store_service.dart';
@@ -19,6 +20,9 @@ class HomeViewController extends GetxController{
   var subCategories = <CategoryModel>[].obs;
   var popularProducts = <ProductModel>[].obs;
   var itemCart = 4.obs;
+  var allProducts = <ProductModel>[].obs;
+  var isLoading = true.obs;
+  RxList<BannerModel> banners = <BannerModel>[].obs;
   void refreshSubCategories(String value){
     subCategories.bindStream(_storeService.getSubCategories(value));
   }
@@ -33,22 +37,16 @@ class HomeViewController extends GetxController{
     ever(categories, (_) => {
       if (selectedCategoryName.value == '')defaultInit()
     });
+    _storeService.getBannersStream().listen((List<BannerModel> data) {
+      banners.value = data;
+    });
+    banners.listen((data) async {
+      isLoading.value = false;
+    });
+    _storeService.getProducts().listen((List<ProductModel> data) {
+      allProducts.value = data;
+    });
     popularProducts.bindStream(_storeService.getPopularProducts());
-    String id = RandomStringHelper.generateRandomString(20);
-    // _storeService.addProduct(ProductModel(
-    //   id: id,
-    //   name: 'Pizza Seafood',
-    //   description: 'This pizza is made with seafood such as shrimp, squid, salmon and mozzarella cheese.',
-    //   price: 9.99,
-    //   categoryId: 'ky6DkY9WanULMZFbZoOl',
-    //   subCategoryId: 'LVc90mAEWL4FS55Iw8iS',
-    //   created_at: DateTime.now().toString(),
-    //   quantity: 10,
-    //   rating: 4.5,
-    //   sales: 100,
-    //   images: ['https://firebasestorage.googleapis.com/v0/b/flutter-food-1a10d.appspot.com/o/images%2Fcategories%2Fmaxresdefault.jpg?alt=media&token=ac2f9732-1def-4ba9-963c-34b41fc8b4fb'],
-    // ));
-
   }
 
   @override

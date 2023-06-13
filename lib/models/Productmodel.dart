@@ -34,9 +34,9 @@ class ProductModel {
     categoryId: json['categoryId'] as String,
     subCategoryId: json['subCategoryId'] as String,
     created_at: json['created_at'] as String,
-    quantity: json['quantity'] as int,
+    quantity: (json['quantity'] as num).toInt(),
     rating: (json['rating'] as num).toDouble(),
-    sales: json['sales'] as int,
+    sales: (json['sales'] as num).toInt(),
     images: (json['images'] as List<dynamic>).map((e) => e as String).toList(),
   );
 

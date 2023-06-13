@@ -11,6 +11,7 @@ class OrderModel {
   final String status;
   final String total;
   final String orderDay;
+  final bool cancelRequest;
 
   OrderModel(
       {required this.items,
@@ -22,7 +23,9 @@ class OrderModel {
       required this.payment,
       required this.status,
       required this.total,
-      required this.orderDay});
+      required this.orderDay,
+      required this.cancelRequest
+      });
 
   Map<String, dynamic> toJson() {
     List<Map<String, dynamic>> itemJsonList =
@@ -39,6 +42,7 @@ class OrderModel {
       'status': this.status,
       'total': this.total,
       'orderDay': this.orderDay,
+      'cancelRequest': this.cancelRequest,
     };
   }
 
@@ -49,15 +53,16 @@ class OrderModel {
 
     return OrderModel(
       items: itemModelList,
-      orderid: json['orderid']?? '',
-      uid: json['uid']?? '',
-      recipient: json['recipient']?? '',
-      phoneNo: json['phoneNo']?? '',
-      address: json['address']?? '',
-      payment: json['payment']?? '',
-      status: json['status']?? '',
+      orderid: json['orderid'] ?? '',
+      uid: json['uid'] ?? '',
+      recipient: json['recipient'] ?? '',
+      phoneNo: json['phoneNo'] ?? '',
+      address: json['address'] ?? '',
+      payment: json['payment'] ?? '',
+      status: json['status'] ?? '',
       total: json['total'] ?? '',
-      orderDay: json['orderDay']?? '',
+      orderDay: json['orderDay'] ?? '',
+      cancelRequest: json['cancelRequest'] ?? '',
     );
   }
 }

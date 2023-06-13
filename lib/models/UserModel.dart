@@ -8,9 +8,10 @@ class UserModel {
   final String? photoUrl;
   final String? birthDay;
   final String? gender;
-
-  UserModel({this.id,  this.fullName, this.email, this.phoneNo,
-    this.password, this.address, this.birthDay, this.gender, this.photoUrl});
+  final bool? role;
+  final String? createAt;
+  UserModel( {this.id,  this.fullName, this.email, this.phoneNo,
+    this.password, this.address, this.birthDay, this.gender, this.photoUrl, this.role, this.createAt});
 
   toJSon() {
     return {
@@ -21,6 +22,8 @@ class UserModel {
       'Address': address,
       'BirthDay': birthDay,
       'Gender': gender,
+      'role': role,
+      'create_at': createAt,
     };
   }
 
@@ -35,6 +38,8 @@ class UserModel {
       birthDay: json['birthDay'],
       gender: json['gender'],
       photoUrl: json['photoUrl'],
+      role: json['role'],
+      createAt: json['create_at'],
     );
   }
 }

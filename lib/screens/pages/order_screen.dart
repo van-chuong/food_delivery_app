@@ -114,6 +114,7 @@ class OrderScreen extends GetView<OrderController> {
                               border: TableBorder.all(borderRadius: BorderRadius.circular(24),color: AppColors.grayMain),
                               columns: [
                                 DataColumn(label: Text('Recipient Name')),
+                                DataColumn(label: Text('Order day')),
                                 DataColumn(label: Text('Items')),
                                 DataColumn(label: Text('Payment')),
                                 DataColumn(label: Text('Status')),
@@ -122,6 +123,7 @@ class OrderScreen extends GetView<OrderController> {
                               rows: orderController.orders.map(
                                     (order) => DataRow(cells: [
                                       DataCell(Text(order.recipient)),
+                                      DataCell(Text(order.orderDay)),
                                       DataCell(Center(child: Text(order.items.length.toString()),)),
                                       DataCell(ColorHelper.paymentColor(order.payment)),
                                       DataCell(ColorHelper.statusColor(order.status)),
@@ -134,7 +136,9 @@ class OrderScreen extends GetView<OrderController> {
                                         onTap: () {
                                           Get.toNamed(OrderDetail.routerName, arguments: {
                                             'orderId': order.orderid,
-                                          });
+                                            'status': order.status,
+                                          }
+                                          );
                                         },
                                       ),)),
                                 ]),

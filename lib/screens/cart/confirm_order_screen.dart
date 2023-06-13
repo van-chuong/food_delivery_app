@@ -399,8 +399,7 @@ class ConfirmOrderScreen extends GetView<CheckoutController> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  if (_formKey.currentState != null &&
-                                  _formKey.currentState!.saveAndValidate()) {
+                                  if (_formKey.currentState != null && _formKey.currentState!.saveAndValidate()) {
                                     if(checkoutController.paymentMethod.value ==''){
                                       Get.defaultDialog(
                                         title: 'Notification',

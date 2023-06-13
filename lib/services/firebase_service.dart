@@ -8,7 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../config/helper/local_storage_helper.dart';
 import '../models/UserModel.dart';
 import '../screens/main_screen.dart';
-
+import 'package:intl/intl.dart';
 class FirebaseService {
   final _auth = FirebaseAuth.instance;
   final _fireStore = FirebaseFirestore.instance;
@@ -22,11 +22,11 @@ class FirebaseService {
   //   // ever(firebaseUser, _setInitialScreen);
   // }
 
-  _setInitialScreen(User? user) {
-    user == null
-        ? Get.offAll(() => HomeScreen())
-        : Get.offAll(() => MainScreen());
-  }
+  // _setInitialScreen(User? user) {
+  //   user == null
+  //       ? Get.offAll(() => HomeScreen())
+  //       : Get.offAll(() => MainScreen());
+  // }
 
   signInWithGoogle(context) async {
     try {
@@ -40,7 +40,7 @@ class FirebaseService {
             idToken: googleSignInAuthentication.idToken);
         await _auth.signInWithCredential(authCredential);
         await saveUser(googleSignInAccount, _auth);
-        Get.offAll(() => MainScreen());
+        Get.offAndToNamed(MainScreen.routerName);
       }
     } on FirebaseAuthException catch (e) {
       print(e.message);
@@ -79,13 +79,16 @@ class FirebaseService {
         email: emailAddress,
         password: password,
       );
+      final dayNow = DateFormat('yyyy/MM/dd').format(DateTime.now());
       await _auth.currentUser?.updateDisplayName(fullName);
       await _fireStore.collection('users').doc(_auth.currentUser?.uid).set({
         'fullName': fullName,
         'email': emailAddress,
         'photoUrl': null,
         'phoneNo': null,
-        'password': null
+        'password': null,
+        'role': false,
+        'create_at': dayNow
       });
       return null;
     } on FirebaseAuthException catch (e) {
@@ -103,12 +106,13 @@ class FirebaseService {
   }
 
   saveUser(GoogleSignInAccount googleSignInAccount, FirebaseAuth auth) {
-    _fireStore.collection('users').doc(auth.currentUser?.uid).set({
+    _fireStore.collection('users').doc(auth.currentUser?.uid).update({
       'fullName': googleSignInAccount.displayName,
       'email': googleSignInAccount.email,
       'photoUrl': googleSignInAccount.photoUrl,
       'phoneNo': null,
-      'password': null
+      'password': null,
+      'role': false
     });
   }
 
@@ -147,9 +151,7 @@ class FirebaseService {
   }
   Future updateAvatar(String photoUrl) async {
     try {
-      if(_auth.currentUser?.photoURL != photoUrl){
-        await _auth.currentUser?.updatePhotoURL(photoUrl);
-      }
+      await _auth.currentUser?.updatePhotoURL(photoUrl);
       await _fireStore
           .collection('users')
           .doc(_auth.currentUser?.uid)

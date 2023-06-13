@@ -17,6 +17,12 @@ class AppColors{
   static final yellow = Color(0xFFFFC107);
   static final red = Color(0xFFFF0707);
   static final green = Color(0xFF4BB543);
+  static final error = Color(0xFFFF3737);
+  static final darkBlue = Color(0xFF0039FF);
+  static final darkGreen = Color(0xFF00B211);
+  static final darkPink = Color(0xFFCC0056);
+  static final darkPurple = Color.fromRGBO(165, 80, 179, 1);
+  static final darkTealBlue = Color(0xFF008CCC);
 }
 class AppGradient{
   static Gradient dfGradientBg = LinearGradient(

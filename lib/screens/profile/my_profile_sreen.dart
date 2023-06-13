@@ -50,12 +50,10 @@ class MyProfileScreen extends GetView<ProfileController> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 30,0,15),
                   child: Center(
-                      child: CircleAvatar(
+                      child: Obx(()=>CircleAvatar(
                           radius: 50,
-                          backgroundImage: NetworkImage(
-                              profileController.firebaseUser?.photoURL ??
-                                  ImageHelper.imgAvatarNet)
-                      )
+                          backgroundImage: NetworkImage(profileController.photoUrl.value ?? ImageHelper.imgAvatarNet)
+                      ))
                   ),
                 ),
                 Align(
